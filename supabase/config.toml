@@ -1,0 +1,3 @@
+# Config mínima para el CLI de Supabase (opcional en Sprint 0).
+# El estado autoritativo del schema es el REMOTO; el CLI aquí solo versiona.
+project_id = "gzpdqrtgabywecepjrbw"
