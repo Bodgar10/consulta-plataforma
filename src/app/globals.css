@@ -38,6 +38,9 @@
     @apply card transition-colors hover:border-pine-400 cursor-pointer;
   }
 
+  /* ---- Divisor hairline (filas de tabla, listas) ---- */
+  .border-hair { @apply border-b-[0.5px] border-sand-200; }
+
   /* ---- Booking: slots ---- */
   .slot {
     @apply flex items-center justify-center rounded-[7px] bg-cream-0
@@ -55,7 +58,10 @@
   }
   .badge-confirmed { @apply badge bg-success-50 text-pine-700; }
   .badge-pending   { @apply badge bg-warning-50 text-[#8A6420]; }
+  .badge-pending-verification { @apply badge bg-warning-50 text-[#8A6420]; }
+  .badge-completed { @apply badge bg-sand-200 text-sand-700; }
   .badge-cancelled { @apply badge bg-danger-50 text-danger-600; }
+  .badge-no-show   { @apply badge bg-sand-200 text-sand-500; }
 
   /* ---- Formularios ---- */
   .field {

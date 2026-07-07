@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
       if (!contextError && context) {
         if (context.is_professional) {
-          return NextResponse.redirect(`${origin}/${context.tenant_slug}/panel`);
+          return NextResponse.redirect(`${origin}/agenda`);
         }
         return NextResponse.redirect(`${origin}/mi-cuenta`);
       }

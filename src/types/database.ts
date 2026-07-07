@@ -1278,6 +1278,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      confirm_transfer_payment: {
+        Args: { p_appointment_id: string }
+        Returns: Json
+      }
       current_user_context: {
         Args: never
         Returns: {
@@ -1287,6 +1291,50 @@ export type Database = {
       }
       current_user_patient_ids: { Args: never; Returns: string[] }
       current_user_tenant_ids: { Args: never; Returns: string[] }
+      professional_create_appointment: {
+        Args: {
+          p_email?: string
+          p_end_at: string
+          p_full_name?: string
+          p_patient_id?: string
+          p_payment_mode?: string
+          p_phone?: string
+          p_recurrence_group_id?: string
+          p_start_at: string
+        }
+        Returns: Json
+      }
+      professional_create_recurrence: {
+        Args: {
+          p_email?: string
+          p_end_at: string
+          p_full_name?: string
+          p_occurrences: number
+          p_patient_id?: string
+          p_payment_mode?: string
+          p_phone?: string
+          p_start_at: string
+          p_weekday: number
+        }
+        Returns: Json
+      }
+      professional_issue_credit: {
+        Args: {
+          p_amount_paid_cents?: number
+          p_package_id: string
+          p_patient_id: string
+        }
+        Returns: Json
+      }
+      professional_update_appointment: {
+        Args: {
+          p_action: string
+          p_appointment_id: string
+          p_end_at?: string
+          p_start_at?: string
+        }
+        Returns: Json
+      }
       public_capture_lead: {
         Args: {
           p_email: string

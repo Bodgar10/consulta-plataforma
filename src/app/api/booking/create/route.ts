@@ -3,8 +3,7 @@ import { createAdminClient } from '@/utils/supabase/admin';
 import { validateBookingWindow } from '@/lib/booking/validate';
 import { getStripe } from '@/lib/payments/stripe';
 import { PAYMENTS_CONFIG, applicationFeeAmount } from '@/lib/payments/config';
-import { createDailyRoom } from '@/lib/video/daily';
-import { sendAppointmentConfirmation } from '@/lib/email/appointment';
+import { applyConfirmationEffects } from '@/lib/booking/confirm';
 import { linkPatientAccount } from '@/lib/auth/link-account';
 import type { BookingSettings } from '@/lib/booking/slots';
 
@@ -134,12 +133,17 @@ export async function POST(req: NextRequest) {
 
       await recordConsent(supabase, apptId as string, consent.privacy_version, ip, userAgent);
 
-      // Sala Daily + correo inline (no hay webhook en este camino).
-      const roomUrl = await createDailyRoom({ appointmentId: apptId as string, startAt: start_at, endAt: end_at });
-      if (roomUrl) {
-        await supabase.from('appointments').update({ video_room_url: roomUrl }).eq('id', apptId);
-      }
-      await sendAppointmentConfirmation({ email, fullName: full_name, startAt: start_at, roomUrl, timezone: (tenant.timezone as string) });
+      // Efectos idempotentes de confirmación (sala Daily + correo) — helper único.
+      // El descuento de crédito ya ocurrió atómicamente dentro del RPC.
+      const roomUrl = await applyConfirmationEffects(supabase, {
+        appointmentId: apptId as string,
+        startAt: start_at,
+        endAt: end_at,
+        videoRoomUrl: null,
+        patientEmail: email,
+        patientFullName: full_name,
+        tenantTimezone: (tenant.timezone as string) ?? null,
+      });
       if (password) await linkPatientAccount({ tenantId: tenant_id, email, password });
 
       return NextResponse.json({ status: 'confirmed', appointment_id: apptId, video_room_url: roomUrl });

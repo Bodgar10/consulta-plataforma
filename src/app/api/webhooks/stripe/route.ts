@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import type Stripe from 'stripe';
 import { getStripe } from '@/lib/payments/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
-import { createDailyRoom } from '@/lib/video/daily';
-import { sendAppointmentConfirmation } from '@/lib/email/appointment';
+import { applyConfirmationEffects } from '@/lib/booking/confirm';
 
 export const dynamic = 'force-dynamic';
 // Necesario para verificar la firma con el body crudo.
@@ -100,30 +99,20 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true, idempotent: true });
   }
 
-  // Efectos posteriores a la confirmación: sala Daily + correo. No rompen si fallan.
-  let roomUrl = appt.video_room_url as string | null;
-  if (!roomUrl) {
-    roomUrl = await createDailyRoom({
-      appointmentId: appointmentId,
-      startAt: appt.start_at as string,
-      endAt: appt.end_at as string,
-    });
-    if (roomUrl) {
-      await supabase.from('appointments').update({ video_room_url: roomUrl }).eq('id', appointmentId);
-    }
-  }
-
+  // Efectos idempotentes de confirmación (sala Daily + correo) — helper único.
+  // Solo llegamos aquí si `updated` fue truthy (transición real), así que el
+  // correo se manda exactamente una vez por confirmación.
   const patient = (appt as { patient?: { full_name?: string; email?: string } }).patient;
   const tenantTz = (appt as { tenant?: { timezone?: string } }).tenant?.timezone;
-  if (patient?.email) {
-    await sendAppointmentConfirmation({
-      email: patient.email,
-      fullName: patient.full_name ?? '',
-      startAt: appt.start_at as string,
-      roomUrl,
-      timezone: tenantTz,
-    });
-  }
+  await applyConfirmationEffects(supabase, {
+    appointmentId,
+    startAt: appt.start_at as string,
+    endAt: appt.end_at as string,
+    videoRoomUrl: appt.video_room_url as string | null,
+    patientEmail: patient?.email ?? null,
+    patientFullName: patient?.full_name ?? null,
+    tenantTimezone: tenantTz ?? null,
+  });
 
   return NextResponse.json({ received: true, confirmed: appointmentId });
 }
