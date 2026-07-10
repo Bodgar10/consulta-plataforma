@@ -3,6 +3,7 @@ import type Stripe from 'stripe';
 import { getStripe } from '@/lib/payments/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { applyConfirmationEffects } from '@/lib/booking/confirm';
+import { confirmEventRegistration } from '@/lib/events/confirm-registration';
 
 export const dynamic = 'force-dynamic';
 // Necesario para verificar la firma con el body crudo.
@@ -36,6 +37,19 @@ export async function POST(req: NextRequest) {
     appointmentId = pi.metadata?.appointment_id;
     paymentIntentId = pi.id;
     amountCents = pi.amount_received ?? pi.amount ?? undefined;
+    // Registro de EVENTO EN VIVO: discriminado por registration_id (no por type).
+    {
+      const regId = pi.metadata?.registration_id;
+      const liveEventId = pi.metadata?.live_event_id;
+      const evTenantId = pi.metadata?.tenant_id;
+      if (regId && liveEventId && evTenantId && paymentIntentId) {
+        const admin = createAdminClient();
+        const status = await confirmEventRegistration(admin, {
+          registrationId: regId, liveEventId, tenantId: evTenantId, paymentIntentId,
+        });
+        return NextResponse.json({ received: true, event_registration: status });
+      }
+    }
   } else if (event.type === 'checkout.session.completed') {
     const s = event.data.object as Stripe.Checkout.Session;
     // Sólo confirmamos si el pago está liquidado (OXXO puede quedar 'unpaid').
@@ -45,6 +59,19 @@ export async function POST(req: NextRequest) {
     appointmentId = s.metadata?.appointment_id;
     paymentIntentId = typeof s.payment_intent === 'string' ? s.payment_intent : s.payment_intent?.id;
     amountCents = s.amount_total ?? undefined;
+    // Registro de EVENTO EN VIVO: discriminado por registration_id (no por type).
+    {
+      const regId = s.metadata?.registration_id;
+      const liveEventId = s.metadata?.live_event_id;
+      const evTenantId = s.metadata?.tenant_id;
+      if (regId && liveEventId && evTenantId && paymentIntentId) {
+        const admin = createAdminClient();
+        const status = await confirmEventRegistration(admin, {
+          registrationId: regId, liveEventId, tenantId: evTenantId, paymentIntentId,
+        });
+        return NextResponse.json({ received: true, event_registration: status });
+      }
+    }
   } else {
     return NextResponse.json({ received: true, ignored: event.type });
   }

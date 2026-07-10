@@ -35,7 +35,7 @@ export async function applyConfirmationEffects(
 
   if (!roomUrl) {
     roomUrl = await createDailyRoom({
-      appointmentId: input.appointmentId,
+      name: `appt-${input.appointmentId}`,
       startAt: input.startAt,
       endAt: input.endAt,
     });

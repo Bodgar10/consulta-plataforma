@@ -41,7 +41,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'no se pudo leer disponibilidad' }, { status: 500 });
   }
 
-  const timezone = (tenant.timezone as string) || 'America/Mexico_City';
+  // Sin fallback a CDMX (Z2): la zona la manda la config del tenant. Si falta, es
+  // bug de config -> 400 explícito en vez de asumir una zona.
+  const timezone = tenant.timezone as string | null;
+  if (!timezone) {
+    return NextResponse.json({ error: 'tenant_timezone_missing' }, { status: 400 });
+  }
   const settings = (tenant.booking_settings as unknown as BookingSettings) ?? {
     lead_time_hours: 12,
     max_horizon_days: 60,

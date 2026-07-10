@@ -1291,6 +1291,14 @@ export type Database = {
       }
       current_user_patient_ids: { Args: never; Returns: string[] }
       current_user_tenant_ids: { Args: never; Returns: string[] }
+      link_patient_to_auth_user: {
+        Args: { p_email: string; p_tenant_id: string }
+        Returns: string
+      }
+      patient_exists_for_login: {
+        Args: { p_email: string; p_tenant_id: string }
+        Returns: boolean
+      }
       professional_create_appointment: {
         Args: {
           p_email?: string

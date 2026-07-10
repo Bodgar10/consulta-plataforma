@@ -21,11 +21,22 @@ export async function sendAppointmentConfirmation(args: ConfirmationArgs): Promi
     return;
   }
 
-  const zone = args.timezone ?? 'America/Mexico_City';
-  const cuando = DateTime.fromISO(args.startAt, { zone: 'utc' })
-    .setZone(zone)
-    .setLocale('es')
-    .toFormat("cccc d 'de' LLLL, HH:mm");
+  // Sin fallback a CDMX (Z2): si el caller no pasó la zona del tenant, es un bug de
+  // config. Formateamos la fecha SOLO si hay zona; si no, se omite la línea de fecha
+  // (no se inventa una zona).
+  let cuando: string | null = null;
+  if (args.timezone) {
+    cuando = DateTime.fromISO(args.startAt, { zone: 'utc' })
+      .setZone(args.timezone)
+      .setLocale('es')
+      .toFormat("cccc d 'de' LLLL, HH:mm");
+  } else {
+    console.error('resend: sin timezone del tenant; se omite la línea de fecha', args.email);
+  }
+
+  const fechaBlock = cuando
+    ? `<p>Tu sesión quedó confirmada para el <strong>${cuando}</strong>.</p>`
+    : `<p>Tu sesión quedó confirmada.</p>`;
 
   const linkBlock = args.roomUrl
     ? `<p>Tu sesión será por videollamada. Únete aquí a la hora acordada:</p>
@@ -41,7 +52,7 @@ export async function sendAppointmentConfirmation(args: ConfirmationArgs): Promi
       html: `
         <div style="font-family: Inter, system-ui, sans-serif; color:#1F332E;">
           <p>Hola ${args.fullName},</p>
-          <p>Tu sesión quedó confirmada para el <strong>${cuando}</strong>.</p>
+          ${fechaBlock}
           ${linkBlock}
           <p style="color:#7A7161; font-size:14px;">Si necesitas reagendar, responde a este correo.</p>
         </div>

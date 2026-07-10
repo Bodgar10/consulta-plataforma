@@ -1,11 +1,11 @@
 interface CreateRoomArgs {
-  appointmentId: string;
+  name: string;    // nombre único de la sala (p.ej. appt-<id> de cita, event-<id> de evento)
   startAt: string; // ISO
   endAt: string;   // ISO
 }
 
 /**
- * Crea una sala Daily para una cita. Devuelve la URL o null si falla.
+ * Crea una sala Daily (cita o evento). Devuelve la URL o null si falla.
  * NUNCA lanza: un fallo de Daily no debe tumbar la confirmación del pago.
  * La sala expira poco después del fin de la sesión (nbf/exp por privacidad).
  */
@@ -28,7 +28,7 @@ export async function createDailyRoom(args: CreateRoomArgs): Promise<string | nu
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        name: `appt-${args.appointmentId}`,
+        name: args.name,
         privacy: 'private',
         properties: {
           nbf,
@@ -43,7 +43,7 @@ export async function createDailyRoom(args: CreateRoomArgs): Promise<string | nu
       // 400 con "already exists" => reusar la sala existente (idempotencia).
       const body = await res.json().catch(() => ({}));
       if (res.status === 400 && String(body?.info ?? '').includes('already exists')) {
-        return domain ? `https://${domain}/appt-${args.appointmentId}` : null;
+        return domain ? `https://${domain}/${args.name}` : null;
       }
       console.error('daily: error creando sala', res.status, body);
       return null;

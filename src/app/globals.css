@@ -77,4 +77,13 @@
   .section-title { @apply font-display text-[1.375rem] font-medium text-pine-700; }
   .card-title    { @apply font-display text-[1.125rem] font-medium text-pine-700; }
   .muted         { @apply text-sm text-sand-700; }
+
+  /* ---- Embudo / lead magnet ---- */
+  .lead-magnet-card { @apply text-center; }
+  .landing-hero { @apply bg-cream-50 px-4 py-16 flex flex-col items-center text-center; }
+  .landing-block { @apply text-left; }
+
+  /* ---- Evento en vivo (hooks semánticos; layout por utilidades inline) ---- */
+  .event-meta {}
+  .event-capacity-bar {}
 }

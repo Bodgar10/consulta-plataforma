@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { validateBookingWindow } from '@/lib/booking/validate';
-import { getStripe } from '@/lib/payments/stripe';
-import { PAYMENTS_CONFIG, applicationFeeAmount } from '@/lib/payments/config';
+import { createCheckoutSession } from '@/lib/payments/checkout';
 import { applyConfirmationEffects } from '@/lib/booking/confirm';
 import { linkPatientAccount } from '@/lib/auth/link-account';
 import type { BookingSettings } from '@/lib/booking/slots';
@@ -197,34 +196,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'price_not_set', message: 'No hay precio de sesión configurado.' }, { status: 409 });
     }
 
-    const stripe = getStripe();
-    const methodTypes = payment_mode === 'oxxo' ? [...PAYMENTS_CONFIG.methods.oxxo] : [...PAYMENTS_CONFIG.methods.card];
-
-    const session = await stripe.checkout.sessions.create({
-      mode: 'payment',
-      payment_method_types: methodTypes as Array<'card' | 'oxxo'>,
-      customer_email: email,
-      line_items: [
-        {
-          price_data: {
-            currency: PAYMENTS_CONFIG.currency,
-            product_data: { name: 'Sesión' },
-            unit_amount: sessionPriceCents,
-          },
-          quantity: 1,
-        },
-      ],
-      payment_intent_data: {
-        application_fee_amount: applicationFeeAmount(sessionPriceCents),
-        transfer_data: { destination: stripeAccountId },
-        metadata: { appointment_id: String(apptId), tenant_id },
-      },
+    const session = await createCheckoutSession({
+      stripeAccountId,
+      amountCents: sessionPriceCents,
+      productName: 'Sesión',
+      customerEmail: email,
+      method: payment_mode === 'oxxo' ? 'oxxo' : 'card',
+      successUrl: `${appUrl}/${tenant_id}/agendar/gracias?appt=${apptId}`,
+      cancelUrl: `${appUrl}/${tenant_id}/agendar?cancelled=1`,
       metadata: { appointment_id: String(apptId), tenant_id },
-      ...(payment_mode === 'oxxo'
-        ? { payment_method_options: { oxxo: { expires_after_days: PAYMENTS_CONFIG.oxxoExpiresAfterDays } } }
-        : {}),
-      success_url: `${appUrl}/${tenant_id}/agendar/gracias?appt=${apptId}`,
-      cancel_url: `${appUrl}/${tenant_id}/agendar?cancelled=1`,
     });
 
     return NextResponse.json({ checkout_url: session.url });

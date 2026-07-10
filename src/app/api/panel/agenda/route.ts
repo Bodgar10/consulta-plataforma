@@ -10,7 +10,8 @@ export const dynamic = 'force-dynamic';
 //
 // Contrato de respuesta:
 // { appointments: [{ id, start_at, end_at, status, payment_mode,
-//                    video_room_url, created_by, patient: { id, full_name } }] }
+//                    video_room_url, created_by, patient: { id, full_name } }],
+//   timezone: "America/Mexico_City" }  // IANA del tenant de la sesión
 export async function GET(req: NextRequest) {
   const supabase = await createClient();
   const {
@@ -39,5 +40,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'error_interno' }, { status: 500 });
   }
 
-  return NextResponse.json({ appointments: data ?? [] });
+  // Zona del tenant de la sesión (la RLS de tenants ya lo aísla al del profesional).
+  // Mismo manejo defensivo que /api/booking/availability: si falta la zona (imposible
+  // en la práctica, tenants.timezone es NOT NULL) -> 400 explícito, no asumir CDMX.
+  const { data: tenantRow } = await supabase
+    .from('tenants')
+    .select('timezone')
+    .limit(1)
+    .maybeSingle();
+  const timezone = tenantRow?.timezone ?? null;
+  if (!timezone) {
+    return NextResponse.json({ error: 'tenant_timezone_missing' }, { status: 400 });
+  }
+
+  return NextResponse.json({ appointments: data ?? [], timezone });
 }

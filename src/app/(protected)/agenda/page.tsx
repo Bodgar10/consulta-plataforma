@@ -1,15 +1,10 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { DateTime } from "luxon";
 import { AgendaView } from "@/components/panel/AgendaView";
 import { NuevaCitaModal } from "@/components/panel/NuevaCitaModal";
 import { RecurrenciaModal } from "@/components/panel/RecurrenciaModal";
-
-// TODO: reemplazar por la zona real del tenant en cuanto exista un hook/contexto
-// que la exponga en el plano de app (ver ⚠️ en el índice de este sprint). Hasta
-// entonces, fallback documentado — NUNCA hardcodear un offset numérico como -6.
-const FALLBACK_TENANT_TIMEZONE = "America/Mexico_City";
 
 export interface PanelAppointment {
   id: string;
@@ -24,15 +19,18 @@ export interface PanelAppointment {
 }
 
 export default function AgendaPage() {
-  const [weekStart, setWeekStart] = useState(() =>
-    DateTime.now().setZone(FALLBACK_TENANT_TIMEZONE).startOf("week")
-  );
+  // Zona del tenant: llega del mismo fetch de /api/panel/agenda (no fallback CDMX).
+  const [timezone, setTimezone] = useState<string | null>(null);
+  // Provisional en zona local del navegador para el primer fetch; se recalcula a la
+  // zona real del tenant una sola vez cuando llega (abajo), sin re-fetch si es la misma.
+  const [weekStart, setWeekStart] = useState<DateTime>(() => DateTime.now().startOf("week"));
   const [appointments, setAppointments] = useState<PanelAppointment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
   const [showNuevaCita, setShowNuevaCita] = useState(false);
   const [showRecurrencia, setShowRecurrencia] = useState(false);
+  const tzApplied = useRef(false);
 
   const weekEnd = useMemo(() => weekStart.plus({ days: 7 }), [weekStart]);
 
@@ -53,7 +51,9 @@ export default function AgendaPage() {
         return res.json();
       })
       .then((data) => {
-        if (!cancelled) setAppointments(data.appointments ?? []);
+        if (cancelled) return;
+        setAppointments(data.appointments ?? []);
+        setTimezone(data.timezone ?? null);
       })
       .catch((err) => {
         if (!cancelled) setError(err.message ?? "No se pudo cargar la agenda");
@@ -67,15 +67,35 @@ export default function AgendaPage() {
     };
   }, [weekStart, weekEnd, reloadToken]);
 
+  // Al conocer la zona real del tenant, reencuadra la semana a esa zona una sola vez.
+  // Si coincide con la semana local (caso común), no reasigna -> no dispara re-fetch.
+  useEffect(() => {
+    if (timezone && !tzApplied.current) {
+      tzApplied.current = true;
+      const tzWeek = DateTime.now().setZone(timezone).startOf("week");
+      setWeekStart((prev) => (prev.hasSame(tzWeek, "day") ? prev : tzWeek));
+    }
+  }, [timezone]);
+
+  const ready = !!timezone;
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between">
         <h1 className="page-title">Agenda</h1>
         <div className="flex gap-2">
-          <button className="btn-primary" onClick={() => setShowNuevaCita(true)}>
+          <button
+            className="btn-primary"
+            disabled={!ready}
+            onClick={() => setShowNuevaCita(true)}
+          >
             Nueva cita
           </button>
-          <button className="btn-secondary" onClick={() => setShowRecurrencia(true)}>
+          <button
+            className="btn-secondary"
+            disabled={!ready}
+            onClick={() => setShowRecurrencia(true)}
+          >
             Cita recurrente
           </button>
           <button
@@ -93,18 +113,22 @@ export default function AgendaPage() {
         </div>
       </div>
 
-      <NuevaCitaModal
-        open={showNuevaCita}
-        onClose={() => setShowNuevaCita(false)}
-        onCreated={() => setReloadToken((t) => t + 1)}
-        timezone={FALLBACK_TENANT_TIMEZONE}
-      />
-      <RecurrenciaModal
-        open={showRecurrencia}
-        onClose={() => setShowRecurrencia(false)}
-        onCreated={() => setReloadToken((t) => t + 1)}
-        timezone={FALLBACK_TENANT_TIMEZONE}
-      />
+      {timezone && (
+        <>
+          <NuevaCitaModal
+            open={showNuevaCita}
+            onClose={() => setShowNuevaCita(false)}
+            onCreated={() => setReloadToken((t) => t + 1)}
+            timezone={timezone}
+          />
+          <RecurrenciaModal
+            open={showRecurrencia}
+            onClose={() => setShowRecurrencia(false)}
+            onCreated={() => setReloadToken((t) => t + 1)}
+            timezone={timezone}
+          />
+        </>
+      )}
 
       <p className="muted">
         {weekStart.toFormat("d 'de' MMMM")} — {weekEnd.minus({ days: 1 }).toFormat("d 'de' MMMM yyyy")}
@@ -116,12 +140,12 @@ export default function AgendaPage() {
         </div>
       )}
 
-      {loading ? (
-        <p className="muted">Cargando agenda…</p>
-      ) : (
+      {!error && (loading || !timezone) && <p className="muted">Cargando agenda…</p>}
+
+      {!error && !loading && timezone && (
         <AgendaView
           appointments={appointments}
-          timezone={FALLBACK_TENANT_TIMEZONE}
+          timezone={timezone}
           weekStart={weekStart}
           onActionComplete={() => setReloadToken((t) => t + 1)}
         />
