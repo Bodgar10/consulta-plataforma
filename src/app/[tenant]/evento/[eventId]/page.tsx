@@ -72,7 +72,7 @@ export default async function LiveEventPage({
         </div>
 
         <div className="mt-6">
-          <EventRegister tenantId={tenant.id} eventId={data.id} priceCents={data.price_cents} isFull={isFull} />
+          <EventRegister tenantId={tenant.id} tenantSlug={tenantSlug} eventId={data.id} priceCents={data.price_cents} isFull={isFull} />
         </div>
       </div>
     </main>

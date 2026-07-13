@@ -19,7 +19,8 @@ interface CreateBody {
   phone: string;
   password?: string | null;
   payment_mode: PaymentMode;
-  consent: { accepted: boolean; privacy_version: string };
+  // La versión la ancla el servidor (O-B3); el cliente solo comunica accepted.
+  consent: { accepted: boolean };
 }
 
 function isSlotConflict(err: unknown): boolean {
@@ -72,10 +73,9 @@ export async function POST(req: NextRequest) {
   if (!consent?.accepted) {
     return NextResponse.json({ error: 'consentimiento requerido' }, { status: 400 });
   }
-  // LFPDPPP: la versión del aviso es parte de la evidencia -> obligatoria.
-  if (!consent?.privacy_version) {
-    return NextResponse.json({ error: 'privacy_version requerida' }, { status: 400 });
-  }
+  // LFPDPPP: la versión del aviso es parte de la evidencia. NO se toma del
+  // cliente (sería manipulable): se ancla server-side desde la vigente publicada,
+  // más abajo (tras crear el admin client y validar el tenant).
 
   // Metadatos de evidencia del consentimiento (best-effort; detrás de Vercel
   // la IP viene en x-forwarded-for, que puede ser una lista -> tomamos la 1ra).
@@ -94,6 +94,19 @@ export async function POST(req: NextRequest) {
 
   if (tErr || !tenant) {
     return NextResponse.json({ error: 'tenant no encontrado' }, { status: 404 });
+  }
+
+  // La versión NO viene del cliente: se ancla server-side desde la vigente publicada.
+  const { data: legalDoc } = await supabase.rpc('public_get_legal_document', {
+    p_tenant_id: tenant_id,
+    p_doc_type: 'privacy',
+  });
+  const serverPrivacyVersion = (legalDoc as { version?: string } | null)?.version;
+  if (!serverPrivacyVersion) {
+    return NextResponse.json(
+      { error: 'no hay aviso de privacidad vigente publicado' },
+      { status: 409 },
+    );
   }
 
   const settings = (tenant.booking_settings as unknown as BookingSettings) ?? {
@@ -130,7 +143,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: error.message }, { status: 422 });
       }
 
-      await recordConsent(supabase, apptId as string, consent.privacy_version, ip, userAgent);
+      await recordConsent(supabase, apptId as string, serverPrivacyVersion, ip, userAgent);
 
       // Efectos idempotentes de confirmación (sala Daily + correo) — helper único.
       // El descuento de crédito ya ocurrió atómicamente dentro del RPC.
@@ -168,7 +181,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 422 });
     }
 
-    await recordConsent(supabase, apptId as string, consent.privacy_version, ip, userAgent);
+    await recordConsent(supabase, apptId as string, serverPrivacyVersion, ip, userAgent);
 
     if (password) await linkPatientAccount({ tenantId: tenant_id, email, password });
 

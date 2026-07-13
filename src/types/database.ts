@@ -1416,6 +1416,13 @@ export type Database = {
           timezone: string
         }[]
       }
+      public_get_legal_document: {
+        Args: {
+          p_doc_type: string
+          p_tenant_id: string
+        }
+        Returns: Json
+      }
       public_record_consent: {
         Args: {
           p_appointment_id: string
@@ -1425,7 +1432,34 @@ export type Database = {
         }
         Returns: string
       }
+      public_record_event_consent: {
+        Args: {
+          p_ip: string
+          p_privacy_version: string
+          p_registration_id: string
+          p_user_agent: string
+        }
+        Returns: string
+      }
+      public_record_lead_consent: {
+        Args: {
+          p_ip: string
+          p_lead_id: string
+          p_privacy_version: string
+          p_user_agent: string
+        }
+        Returns: string
+      }
       public_register_live_event: {
+        Args: {
+          p_email: string
+          p_event_id: string
+          p_name: string
+          p_tenant_id: string
+        }
+        Returns: string
+      }
+      public_register_live_event_as_user: {
         Args: {
           p_email: string
           p_event_id: string

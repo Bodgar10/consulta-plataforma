@@ -39,7 +39,7 @@ export async function POST(req: NextRequest) {
   // Captura del lead — 12 args exactos (primera atribución UTM manda; upsert por tenant+email).
   // Los tipos generados marcan cada arg como string; el cast `as string` preserva el null en runtime
   // (los params de la función SQL son nullables), igual que el patrón de public_record_consent.
-  const { error } = await supabase.rpc('public_capture_lead', {
+  const { data, error } = await supabase.rpc('public_capture_lead', {
     p_tenant_id: tenantId,
     p_email: email,
     p_name: name as string,
@@ -55,6 +55,32 @@ export async function POST(req: NextRequest) {
   });
   if (error) {
     return NextResponse.json({ error: 'capture_failed' }, { status: 400 });
+  }
+
+  const leadId = data as string;
+
+  // Consentimiento de CONTACTO (nivel lead, no salud): evidencia best-effort.
+  const { data: legalDoc } = await supabase.rpc('public_get_legal_document', {
+    p_tenant_id: tenantId,
+    p_doc_type: 'privacy',
+  });
+  const serverPrivacyVersion = (legalDoc as { version?: string } | null)?.version;
+  if (serverPrivacyVersion) {
+    const fwd = req.headers.get('x-forwarded-for') ?? req.headers.get('x-real-ip') ?? '';
+    const ip = fwd.split(',')[0]?.trim() || null;
+    const ua = req.headers.get('user-agent') ?? null;
+    try {
+      await supabase.rpc('public_record_lead_consent', {
+        p_lead_id: leadId,
+        p_privacy_version: serverPrivacyVersion,
+        // La función acepta null (columnas nullables); el cast preserva el null
+        // en runtime, igual que el patrón de public_capture_lead / booking.
+        p_ip: ip as string,
+        p_user_agent: ua as string,
+      });
+    } catch (e) {
+      console.error('record_lead_consent best-effort failed', e);
+    }
   }
 
   // Entrega del magnet: C2 decide si magnetUrl se firma (bucket privado) o va directo (público).

@@ -2,10 +2,12 @@
 
 import { useEffect, useState, type FormEvent } from 'react';
 import { createClient } from '@/utils/supabase/client';
+import { ConsentBox } from '@/components/legal/ConsentBox';
 import EventRegisterConfirmation from './EventRegisterConfirmation';
 
 type Props = {
   tenantId: string;
+  tenantSlug: string;
   eventId: string;
   priceCents: number | null;
   isFull: boolean;
@@ -21,11 +23,12 @@ const ERROR_MESSAGES: Record<string, string> = {
   register_failed: 'No se pudo completar tu registro. Intenta de nuevo.',
 };
 
-export function EventRegister({ tenantId, eventId, priceCents, isFull }: Props) {
+export function EventRegister({ tenantId, tenantSlug, eventId, priceCents, isFull }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [acceptedConsent, setAcceptedConsent] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -98,7 +101,14 @@ export function EventRegister({ tenantId, eventId, priceCents, isFull }: Props) 
 
       {status === 'error' && errorMsg && <p className="field-error" role="alert">{errorMsg}</p>}
 
-      <button type="submit" disabled={status === 'submitting'} className="btn-primary w-full">
+      <ConsentBox
+        checked={acceptedConsent}
+        onChange={setAcceptedConsent}
+        tenantSlug={tenantSlug}
+        variant="health"
+        className="mb-4"
+      />
+      <button type="submit" disabled={status === 'submitting' || !acceptedConsent} className="btn-primary w-full">
         {status === 'submitting' ? 'Procesando…' : priceCents ? 'Continuar al pago' : 'Reservar mi lugar'}
       </button>
     </form>

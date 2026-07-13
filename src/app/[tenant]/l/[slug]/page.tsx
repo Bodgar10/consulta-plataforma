@@ -95,6 +95,7 @@ export default async function LandingSlugPage({
         {data.cta_type === 'lead_magnet' && (
           <LeadCaptureForm
             tenantId={tenant.id}
+            tenantSlug={tenantSlug}
             landingSlug={slug}
             leadMagnetPreview={
               data.lead_magnet

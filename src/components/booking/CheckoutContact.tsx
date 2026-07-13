@@ -2,6 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { createClient } from "@/utils/supabase/client";
+import { ConsentBox } from "@/components/legal/ConsentBox";
 
 export interface ContactPayload {
   full_name: string;
@@ -18,6 +19,7 @@ interface CheckoutContactProps {
   errorMessage?: string | null;
   acceptsTransfer?: boolean;
   tenantId: string;
+  tenantSlug: string;
 }
 
 export default function CheckoutContact({
@@ -26,6 +28,7 @@ export default function CheckoutContact({
   errorMessage = null,
   acceptsTransfer = false,
   tenantId,
+  tenantSlug,
 }: CheckoutContactProps) {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
   const [sessionContact, setSessionContact] = useState<{
@@ -97,21 +100,12 @@ export default function CheckoutContact({
   ) : null;
 
   const consentCheckbox = (
-    <label className="flex items-start gap-2 text-sm text-pine-700">
-      <input
-        type="checkbox"
-        className="mt-0.5"
-        checked={acceptedConsent}
-        onChange={(e) => setAcceptedConsent(e.target.checked)}
-      />
-      <span>
-        He leído y acepto el{" "}
-        <a href="/privacidad" target="_blank" className="underline">
-          aviso de privacidad
-        </a>{" "}
-        y el tratamiento de mis datos para agendar esta sesión.
-      </span>
-    </label>
+    <ConsentBox
+      checked={acceptedConsent}
+      onChange={setAcceptedConsent}
+      tenantSlug={tenantSlug}
+      variant="health"
+    />
   );
 
   if (hasSession) {

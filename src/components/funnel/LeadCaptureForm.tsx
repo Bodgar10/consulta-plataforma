@@ -1,25 +1,28 @@
 'use client';
 
 import { useState, type FormEvent } from 'react';
+import { ConsentBox } from '@/components/legal/ConsentBox';
 import { readFirstTouchUTM } from './UTMPersistence';
 
 type LeadMagnetPreview = { title: string; description: string | null } | null;
 
 type Props = {
   tenantId: string;
+  tenantSlug: string;
   landingSlug: string;
   leadMagnetPreview: LeadMagnetPreview;
 };
 
 type Status = 'idle' | 'submitting' | 'success' | 'error';
 
-export function LeadCaptureForm({ tenantId, landingSlug, leadMagnetPreview }: Props) {
+export function LeadCaptureForm({ tenantId, tenantSlug, landingSlug, leadMagnetPreview }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [magnetUrl, setMagnetUrl] = useState<string | null>(null);
+  const [acceptedConsent, setAcceptedConsent] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -103,7 +106,14 @@ export function LeadCaptureForm({ tenantId, landingSlug, leadMagnetPreview }: Pr
 
       {status === 'error' && errorMsg && <p className="field-error" role="alert">{errorMsg}</p>}
 
-      <button type="submit" disabled={status === 'submitting'} className="btn-primary w-full">
+      <ConsentBox
+        checked={acceptedConsent}
+        onChange={setAcceptedConsent}
+        tenantSlug={tenantSlug}
+        variant="contact"
+        className="mb-4"
+      />
+      <button type="submit" disabled={status === 'submitting' || !acceptedConsent} className="btn-primary w-full">
         {status === 'submitting' ? 'Enviando…' : 'Quiero recibirlo'}
       </button>
     </form>

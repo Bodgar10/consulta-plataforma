@@ -92,7 +92,8 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
           // El modo lo elige el paciente en CheckoutContact (single/transfer);
           // si el tenant no acepta transferencia, el selector no aparece y queda 'single'.
           payment_mode: values.payment_mode,
-          consent: { accepted: values.accepted_consent, privacy_version: process.env.NEXT_PUBLIC_PRIVACY_VERSION ?? '1.0.0' },
+          // privacy_version la ancla el servidor (Opus O-B3); el cliente ya no la envía.
+          consent: { accepted: values.accepted_consent },
         }),
       });
 
@@ -174,6 +175,7 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
           errorMessage={submitError}
           acceptsTransfer={acceptsTransfer}
           tenantId={tenantId}
+          tenantSlug={tenantSlug}
         />
       </div>
     );
