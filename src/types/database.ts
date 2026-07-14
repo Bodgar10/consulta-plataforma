@@ -1472,6 +1472,10 @@ export type Database = {
         Returns: Json
       }
       public_get_packages: { Args: { p_tenant_id: string }; Returns: Json }
+      public_get_published_landings: {
+        Args: { p_tenant_id: string }
+        Returns: Json
+      }
       public_get_tenant_by_domain: {
         Args: { p_domain: string }
         Returns: {
