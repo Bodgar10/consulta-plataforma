@@ -62,7 +62,7 @@ export async function EventsTeaser({
                     {seatsLeft === 0 ? 'Cupo lleno' : `${seatsLeft} lugar${seatsLeft === 1 ? '' : 'es'} disponible${seatsLeft === 1 ? '' : 's'}`}
                   </p>
                   {seatsLeft > 0 && (
-                    <p className="text-pine-600 text-sm font-medium mt-3">
+                    <p className="text-pine-600 text-base font-semibold mt-3">
                       Reservar mi lugar →
                     </p>
                   )}

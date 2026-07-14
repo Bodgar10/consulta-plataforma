@@ -9,7 +9,7 @@ const testimonials = [
 
 export function Testimonials() {
   return (
-    <section className="max-w-3xl mx-auto px-6 py-16 md:py-24">
+    <section className="max-w-3xl mx-auto px-6 py-12 md:py-16">
       <Reveal>
         <h2 className="section-title text-center mb-12 md:mb-16">Voces del proceso</h2>
       </Reveal>
