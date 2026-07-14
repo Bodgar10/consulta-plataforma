@@ -4,13 +4,16 @@ export function BookCTA({
   tenantSlug,
   label = 'Agenda tu sesión',
   className = '',
+  size = 'lg',
 }: {
   tenantSlug: string;
   label?: string;
   className?: string;
+  size?: 'lg' | 'default';
 }) {
+  const base = size === 'lg' ? 'btn-primary-lg' : 'btn-primary';
   return (
-    <Link href={`/${tenantSlug}/agendar`} className={`btn-primary ${className}`.trim()}>
+    <Link href={`/${tenantSlug}/agendar`} className={`${base} ${className}`.trim()}>
       {label}
     </Link>
   );
