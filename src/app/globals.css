@@ -8,6 +8,30 @@
   }
 }
 
+/* ---- Motion: entrada del hero (calibrado boutique, lento y suave) ---- */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@layer utilities {
+  .hero-fade-up {
+    animation: heroFadeUp 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+  .hero-fade-up-delay-1 { animation-delay: 0.15s; }
+  .hero-fade-up-delay-2 { animation-delay: 0.3s; }
+  .hero-fade-up-delay-3 { animation-delay: 0.45s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade-up,
+  .hero-fade-up-delay-1,
+  .hero-fade-up-delay-2,
+  .hero-fade-up-delay-3 {
+    animation: none;
+  }
+}
+
 @layer components {
   /* ---- Acciones ---- */
   .btn-primary {

@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { LeadCaptureForm } from '@/components/funnel/LeadCaptureForm';
+import { Reveal } from '@/components/motion/Reveal';
 
 type LandingBlock =
   | { type: 'paragraph'; text: string }
@@ -78,17 +79,42 @@ export default async function LandingSlugPage({
 
   return (
     <main className="min-h-screen bg-cream-50">
-      <section className="landing-hero">
-        <h1 className="page-title max-w-2xl">{data.headline}</h1>
-        {data.intro_video_url && (
-          <div className="mt-6 aspect-video w-full max-w-2xl rounded-[14px] overflow-hidden">
-            <iframe src={data.intro_video_url} className="w-full h-full" allow="autoplay; encrypted-media; picture-in-picture" allowFullScreen />
-          </div>
-        )}
+      <section className="px-6 pt-24 pb-16 md:pt-32 md:pb-20 flex flex-col items-center text-center">
+        <p className="hero-fade-up text-sm font-medium tracking-wide text-pine-600 mb-5">
+          Yolanda Miranda · Psicoanálisis
+        </p>
+        <h1 className="hero-fade-up hero-fade-up-delay-1 font-display font-medium text-pine-700 text-[2rem] md:text-[2.75rem] leading-[1.15] max-w-3xl">
+          {data.headline}
+        </h1>
+        <div className="hero-fade-up hero-fade-up-delay-2 mt-10 w-full max-w-2xl">
+          {data.intro_video_url ? (
+            <div className="aspect-video w-full rounded-[14px] overflow-hidden shadow-[0_12px_40px_-12px_rgba(31,51,46,0.18)] ring-1 ring-sand-200">
+              <iframe
+                src={data.intro_video_url}
+                className="w-full h-full"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          ) : (
+            <div className="aspect-video w-full rounded-[14px] bg-pine-50 ring-1 ring-sand-200 shadow-[0_12px_40px_-12px_rgba(31,51,46,0.18)] flex flex-col items-center justify-center gap-3">
+              <span className="flex items-center justify-center w-14 h-14 rounded-full bg-cream-0 ring-1 ring-sand-200">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className="text-pine-600 translate-x-[1px]">
+                  <path d="M8 5v14l11-7L8 5z" fill="currentColor" />
+                </svg>
+              </span>
+              <span className="muted">Un mensaje breve de Yolanda</span>
+            </div>
+          )}
+        </div>
       </section>
 
-      <section className="max-w-2xl mx-auto px-4 py-8 space-y-4">
-        {data.body?.map((block, i) => <LandingBlockView key={i} block={block} />)}
+      <section className="max-w-2xl mx-auto px-6 py-12 space-y-6">
+        {data.body?.map((block, i) => (
+          <Reveal key={i} delay={Math.min(i * 0.08, 0.32)}>
+            <LandingBlockView block={block} />
+          </Reveal>
+        ))}
       </section>
 
       <section className="max-w-2xl mx-auto px-4 pb-16">
