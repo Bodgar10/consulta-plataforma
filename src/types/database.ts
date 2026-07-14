@@ -1493,6 +1493,10 @@ export type Database = {
           timezone: string
         }[]
       }
+      public_get_upcoming_events: {
+        Args: { p_tenant_id: string }
+        Returns: Json
+      }
       public_record_consent: {
         Args: {
           p_appointment_id: string

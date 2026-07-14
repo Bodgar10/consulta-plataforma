@@ -43,10 +43,9 @@ export default async function LiveEventPage({
 
   const data = event as LiveEventData;
   const timeZone = tenant.timezone as string;
-  const fecha = DateTime.fromISO(data.start_at, { zone: 'utc' })
-    .setZone(timeZone)
-    .setLocale('es')
-    .toFormat("cccc d 'de' LLLL, h:mm a");
+  const inicio = DateTime.fromISO(data.start_at, { zone: 'utc' }).setZone(timeZone).setLocale('es');
+  const fin = DateTime.fromISO(data.end_at, { zone: 'utc' }).setZone(timeZone).setLocale('es');
+  const fecha = `${inicio.toFormat("cccc d 'de' LLLL")}, ${inicio.toFormat('h:mm a')}–${fin.toFormat('h:mm a')}`;
 
   const seatsLeft = Math.max(data.capacity - data.seats_taken, 0);
   const isFull = seatsLeft === 0;

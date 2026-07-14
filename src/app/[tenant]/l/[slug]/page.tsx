@@ -5,6 +5,7 @@ import { HowItWorks } from '@/components/landing/HowItWorks';
 import { AboutSessions } from '@/components/landing/AboutSessions';
 import { Pricing } from '@/components/landing/Pricing';
 import { Testimonials } from '@/components/landing/Testimonials';
+import { EventsTeaser } from '@/components/landing/EventsTeaser';
 import { BookCTA } from '@/components/landing/BookCTA';
 import { Reveal } from '@/components/motion/Reveal';
 
@@ -130,6 +131,11 @@ export default async function LandingSlugPage({
         tenantSlug={tenantSlug}
         sessionPriceCents={sessionPriceCents}
         acceptsTransfer={acceptsTransfer}
+      />
+      <EventsTeaser
+        tenantId={tenant.id}
+        tenantSlug={tenantSlug}
+        timezone={tenant.timezone as string}
       />
       <Testimonials />
 
