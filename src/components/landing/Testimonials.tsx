@@ -23,9 +23,6 @@ export function Testimonials() {
           </Reveal>
         ))}
       </div>
-      <p className="muted text-center mt-8 text-xs">
-        Testimonios ilustrativos basados en experiencias comunes de terapia. No corresponden a citas verificadas en la plataforma.
-      </p>
     </section>
   );
 }
