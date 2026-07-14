@@ -17,7 +17,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "[PROYECTO]",
+  title: "Consulta Yolanda Miranda · Psicoanálisis",
   description: "Agenda tu sesión",
 };
 

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { DateTime } from 'luxon';
 import { createClient } from '@/utils/supabase/server';
 import { EventRegister } from '@/components/events/EventRegister';
@@ -17,6 +18,34 @@ type LiveEventData = {
 function formatPrice(cents: number | null) {
   if (!cents) return 'Gratis';
   return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(cents / 100);
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tenant: string; eventId: string }>;
+}): Promise<Metadata> {
+  const { tenant: tenantSlug, eventId } = await params;
+  const supabase = await createClient();
+
+  const { data: tenant } = await supabase
+    .rpc('public_get_tenant_by_slug', { p_slug: tenantSlug })
+    .maybeSingle();
+
+  if (!tenant?.id) return {};
+
+  const { data: event } = await supabase.rpc('public_get_live_event', {
+    p_tenant_id: tenant.id,
+    p_event_id: eventId,
+  });
+
+  if (!event) return {};
+
+  const data = event as { title: string };
+
+  return {
+    title: `${data.title} · ${tenant.display_name}`,
+  };
 }
 
 export default async function LiveEventPage({

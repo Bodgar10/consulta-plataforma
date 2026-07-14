@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import { createClient } from '@/utils/supabase/server';
 import { LeadCaptureForm } from '@/components/funnel/LeadCaptureForm';
 import { HowItWorks } from '@/components/landing/HowItWorks';
@@ -55,6 +56,34 @@ function LandingBlockView({ block }: { block: LandingBlock }) {
     default:
       return null;
   }
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ tenant: string; slug: string }>;
+}): Promise<Metadata> {
+  const { tenant: tenantSlug, slug } = await params;
+  const supabase = await createClient();
+
+  const { data: tenant } = await supabase
+    .rpc('public_get_tenant_by_slug', { p_slug: tenantSlug })
+    .maybeSingle();
+
+  if (!tenant?.id) return {};
+
+  const { data: landing } = await supabase.rpc('public_get_landing', {
+    p_tenant_id: tenant.id,
+    p_slug: slug,
+  });
+
+  if (!landing) return {};
+
+  const data = landing as { headline: string };
+
+  return {
+    title: `${data.headline} · ${tenant.display_name}`,
+  };
 }
 
 export default async function LandingSlugPage({
