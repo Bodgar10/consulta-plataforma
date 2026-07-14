@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/cron/release-holds",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 9 * * *"
     },
     {
       "path": "/api/cron/release-event-holds",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 9 * * *"
     }
   ]
 }
