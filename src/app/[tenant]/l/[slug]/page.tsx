@@ -92,7 +92,7 @@ export default async function LandingSlugPage({
       </section>
 
       <section className="max-w-2xl mx-auto px-4 pb-16">
-        {data.cta_type === 'lead_magnet' && (
+        {(data.cta_type === 'magnet' || data.cta_type === 'lead_magnet') && (
           <LeadCaptureForm
             tenantId={tenant.id}
             tenantSlug={tenantSlug}
@@ -104,7 +104,7 @@ export default async function LandingSlugPage({
             }
           />
         )}
-        {data.cta_type === 'agendar' && (
+        {(data.cta_type === 'book' || data.cta_type === 'agendar') && (
           <a href={`/${tenantSlug}/agendar`} className="btn-primary w-full">
             Agendar una sesión
           </a>
