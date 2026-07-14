@@ -2,6 +2,10 @@ import { notFound } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { LeadCaptureForm } from '@/components/funnel/LeadCaptureForm';
 import { HowItWorks } from '@/components/landing/HowItWorks';
+import { AboutSessions } from '@/components/landing/AboutSessions';
+import { Pricing } from '@/components/landing/Pricing';
+import { Testimonials } from '@/components/landing/Testimonials';
+import { BookCTA } from '@/components/landing/BookCTA';
 import { Reveal } from '@/components/motion/Reveal';
 
 type LandingBlock =
@@ -67,6 +71,11 @@ export default async function LandingSlugPage({
 
   if (!tenant?.id) notFound();
 
+  const paymentSettings = (tenant.payment_settings as unknown as Record<string, unknown>) ?? {};
+  const sessionPriceCents =
+    typeof paymentSettings.session_price_cents === 'number' ? paymentSettings.session_price_cents : null;
+  const acceptsTransfer = Boolean(paymentSettings.accepts_transfer);
+
   // public_get_landing es RETURNS jsonb (escalar) → SIN .maybeSingle()
   const { data: landing, error } = await supabase.rpc('public_get_landing', {
     p_tenant_id: tenant.id,
@@ -110,7 +119,19 @@ export default async function LandingSlugPage({
         </div>
       </section>
 
+      <div className="flex justify-center px-6 -mt-4 mb-4">
+        <BookCTA tenantSlug={tenantSlug} />
+      </div>
+
       <HowItWorks />
+      <AboutSessions />
+      <Pricing
+        tenantId={tenant.id}
+        tenantSlug={tenantSlug}
+        sessionPriceCents={sessionPriceCents}
+        acceptsTransfer={acceptsTransfer}
+      />
+      <Testimonials />
 
       <section className="max-w-2xl mx-auto px-6 py-12 space-y-6">
         {data.body?.map((block, i) => (

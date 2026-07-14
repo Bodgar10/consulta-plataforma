@@ -221,33 +221,42 @@ export type Database = {
         Row: {
           accepted_at: string
           appointment_id: string | null
+          consent_kind: string
           created_at: string
           id: string
           ip: string | null
+          lead_id: string | null
           patient_id: string | null
           privacy_version: string
+          registration_id: string | null
           tenant_id: string
           user_agent: string | null
         }
         Insert: {
           accepted_at?: string
           appointment_id?: string | null
+          consent_kind?: string
           created_at?: string
           id?: string
           ip?: string | null
+          lead_id?: string | null
           patient_id?: string | null
           privacy_version: string
+          registration_id?: string | null
           tenant_id: string
           user_agent?: string | null
         }
         Update: {
           accepted_at?: string
           appointment_id?: string | null
+          consent_kind?: string
           created_at?: string
           id?: string
           ip?: string | null
+          lead_id?: string | null
           patient_id?: string | null
           privacy_version?: string
+          registration_id?: string | null
           tenant_id?: string
           user_agent?: string | null
         }
@@ -260,10 +269,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "consents_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "leads"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "consents_patient_id_fkey"
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consents_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "live_event_registrations"
             referencedColumns: ["id"]
           },
           {
@@ -584,6 +607,47 @@ export type Database = {
           },
           {
             foreignKeyName: "leads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      legal_documents: {
+        Row: {
+          content: Json
+          created_at: string
+          doc_type: string
+          id: string
+          is_current: boolean
+          published_at: string
+          tenant_id: string
+          version: string
+        }
+        Insert: {
+          content?: Json
+          created_at?: string
+          doc_type: string
+          id?: string
+          is_current?: boolean
+          published_at?: string
+          tenant_id: string
+          version: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          doc_type?: string
+          id?: string
+          is_current?: boolean
+          published_at?: string
+          tenant_id?: string
+          version?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "legal_documents_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1291,6 +1355,10 @@ export type Database = {
       }
       current_user_patient_ids: { Args: never; Returns: string[] }
       current_user_tenant_ids: { Args: never; Returns: string[] }
+      link_event_registrations_to_auth_user: {
+        Args: { p_email: string; p_tenant_id: string }
+        Returns: number
+      }
       link_patient_to_auth_user: {
         Args: { p_email: string; p_tenant_id: string }
         Returns: string
@@ -1333,6 +1401,10 @@ export type Database = {
           p_patient_id: string
         }
         Returns: Json
+      }
+      professional_publish_legal_document: {
+        Args: { p_content: Json; p_doc_type: string; p_version: string }
+        Returns: string
       }
       professional_update_appointment: {
         Args: {
@@ -1391,10 +1463,15 @@ export type Database = {
         Args: { p_slug: string; p_tenant_id: string }
         Returns: Json
       }
+      public_get_legal_document: {
+        Args: { p_doc_type: string; p_tenant_id: string }
+        Returns: Json
+      }
       public_get_live_event: {
         Args: { p_event_id: string; p_tenant_id: string }
         Returns: Json
       }
+      public_get_packages: { Args: { p_tenant_id: string }; Returns: Json }
       public_get_tenant_by_domain: {
         Args: { p_domain: string }
         Returns: {
@@ -1415,13 +1492,6 @@ export type Database = {
           payment_settings: Json
           timezone: string
         }[]
-      }
-      public_get_legal_document: {
-        Args: {
-          p_doc_type: string
-          p_tenant_id: string
-        }
-        Returns: Json
       }
       public_record_consent: {
         Args: {
