@@ -17,7 +17,7 @@ export function Testimonials() {
         {testimonials.map((t, i) => (
           <Reveal key={i} delay={Math.min(i * 0.12, 0.24)}>
             <blockquote className="card h-full">
-              <p className="text-body text-pine-900 italic">"{t.text}"</p>
+              <p className="text-body text-pine-900 italic">&ldquo;{t.text}&rdquo;</p>
               <footer className="muted mt-3">— {t.name}</footer>
             </blockquote>
           </Reveal>
