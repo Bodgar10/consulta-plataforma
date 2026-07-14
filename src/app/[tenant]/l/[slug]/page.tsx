@@ -178,7 +178,11 @@ export default async function LandingSlugPage({
 
       <section className="max-w-2xl mx-auto px-4 pb-16">
         {(data.cta_type === 'magnet' || data.cta_type === 'lead_magnet') && (
-          <LeadCaptureForm
+          <Reveal>
+            <p className="section-title text-center mb-6">
+              ¿Quieres dar el primer paso?
+            </p>
+            <LeadCaptureForm
             tenantId={tenant.id}
             tenantSlug={tenantSlug}
             landingSlug={slug}
@@ -188,6 +192,7 @@ export default async function LandingSlugPage({
                 : null
             }
           />
+          </Reveal>
         )}
         {(data.cta_type === 'book' || data.cta_type === 'agendar') && (
           <a href={`/${tenantSlug}/agendar`} className="btn-primary w-full">

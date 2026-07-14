@@ -34,7 +34,7 @@ export async function EventsTeaser({
   const list = (events ?? []) as UpcomingEvent[];
 
   return (
-    <section className="max-w-4xl mx-auto px-6 py-16 md:py-24">
+    <section className="max-w-4xl mx-auto px-6 py-12 md:py-16">
       <Reveal>
         <h2 className="section-title text-center mb-4">Eventos en vivo</h2>
         <p className="muted text-center max-w-xl mx-auto mb-12 md:mb-16">
@@ -61,6 +61,11 @@ export async function EventsTeaser({
                   <p className="muted mt-1">
                     {seatsLeft === 0 ? 'Cupo lleno' : `${seatsLeft} lugar${seatsLeft === 1 ? '' : 'es'} disponible${seatsLeft === 1 ? '' : 's'}`}
                   </p>
+                  {seatsLeft > 0 && (
+                    <p className="text-pine-600 text-sm font-medium mt-3">
+                      Reservar mi lugar →
+                    </p>
+                  )}
                 </a>
               </Reveal>
             );

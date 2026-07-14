@@ -40,7 +40,7 @@ export async function Pricing({
   );
 
   return (
-    <section className="max-w-4xl mx-auto px-6 py-16 md:py-24">
+    <section className="max-w-4xl mx-auto px-6 py-12 md:py-16">
       <Reveal>
         <h2 className="section-title text-center mb-4">Precio y paquetes</h2>
         {sessionPriceCents != null && (
