@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation';
 import { createClient } from '@/utils/supabase/server';
 import { LeadCaptureForm } from '@/components/funnel/LeadCaptureForm';
+import { HowItWorks } from '@/components/landing/HowItWorks';
 import { Reveal } from '@/components/motion/Reveal';
 
 type LandingBlock =
@@ -108,6 +109,8 @@ export default async function LandingSlugPage({
           )}
         </div>
       </section>
+
+      <HowItWorks />
 
       <section className="max-w-2xl mx-auto px-6 py-12 space-y-6">
         {data.body?.map((block, i) => (
