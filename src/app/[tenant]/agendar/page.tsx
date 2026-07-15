@@ -39,7 +39,12 @@ export default async function AgendarPage({
   return (
     <main className="min-h-screen px-6 py-12">
       <div className="max-w-2xl mx-auto space-y-8">
-        <h1 className="page-title">Agenda tu sesión con {tenant.display_name}</h1>
+        <div>
+          <h1 className="page-title">Agenda tu sesión con {tenant.display_name}</h1>
+          <p className="muted mt-2">
+            Este es solo el primer paso. Elige el momento que te acomode, sin prisa.
+          </p>
+        </div>
         <BookingFlow
           tenantId={tenant.id}
           tenantSlug={slug}
