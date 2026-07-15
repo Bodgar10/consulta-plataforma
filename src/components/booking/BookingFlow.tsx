@@ -17,12 +17,13 @@ interface BookingFlowProps {
   tenantSlug: string;
   tenantTimezone: string;
   acceptsTransfer?: boolean;
+  sessionPriceCents?: number | null;
 }
 
 // Ventana de disponibilidad que pedimos; el endpoint la recorta por lead-time/horizonte.
 const HORIZON_DAYS = 45;
 
-export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acceptsTransfer }: BookingFlowProps) {
+export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acceptsTransfer, sessionPriceCents }: BookingFlowProps) {
   const router = useRouter();
 
   const [slotsByDay, setSlotsByDay] = useState<Record<string, Slot[]>>({});
@@ -176,6 +177,7 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
           acceptsTransfer={acceptsTransfer}
           tenantId={tenantId}
           tenantSlug={tenantSlug}
+          sessionPriceCents={sessionPriceCents}
         />
       </div>
     );

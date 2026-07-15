@@ -20,6 +20,15 @@ interface CheckoutContactProps {
   acceptsTransfer?: boolean;
   tenantId: string;
   tenantSlug: string;
+  sessionPriceCents?: number | null;
+}
+
+function formatMXN(cents: number) {
+  return (cents / 100).toLocaleString('es-MX', {
+    style: 'currency',
+    currency: 'MXN',
+    maximumFractionDigits: 0,
+  });
 }
 
 export default function CheckoutContact({
@@ -29,6 +38,7 @@ export default function CheckoutContact({
   acceptsTransfer = false,
   tenantId,
   tenantSlug,
+  sessionPriceCents,
 }: CheckoutContactProps) {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
   const [sessionContact, setSessionContact] = useState<{
@@ -73,8 +83,15 @@ export default function CheckoutContact({
     return <p className="muted">Cargando...</p>;
   }
 
+  const priceNotice = sessionPriceCents ? (
+    <p className="text-pine-700 font-medium tabular-nums">
+      Costo de la sesión: {formatMXN(sessionPriceCents)}
+    </p>
+  ) : null;
+
   const paymentModeSelector = acceptsTransfer ? (
     <div className="space-y-2">
+      {priceNotice}
       <span className="field-label">Forma de pago</span>
       <div className="flex gap-3">
         <label className="flex items-center gap-2 text-sm text-pine-700">

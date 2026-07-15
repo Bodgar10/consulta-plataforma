@@ -13,6 +13,7 @@ interface TenantData {
     banco: string | null;
     titular: string | null;
     clabe: string | null;
+    session_price_cents: number | null;
   };
 }
 
@@ -50,6 +51,7 @@ export default async function AgendarPage({
           tenantSlug={slug}
           tenantTimezone={tenant.timezone}
           acceptsTransfer={tenant.payment_settings.accepts_transfer}
+          sessionPriceCents={tenant.payment_settings.session_price_cents}
         />
       </div>
     </main>
