@@ -47,7 +47,7 @@ export async function sendLiveEventConfirmation(args: { registrationId: string }
   `;
 
   const resend = new Resend(apiKey);
-  const from = process.env.RESEND_FROM ?? 'no-reply@example.com';
+  const from = process.env.RESEND_FROM_EMAIL ?? 'no-reply@example.com';
   try {
     await resend.emails.send({ from, to: reg.email, subject: `Confirmado: ${ev.title}`, html });
   } catch (e) {

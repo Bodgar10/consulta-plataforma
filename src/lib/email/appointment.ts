@@ -15,7 +15,7 @@ interface ConfirmationArgs {
  */
 export async function sendAppointmentConfirmation(args: ConfirmationArgs): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
-  const from = process.env.RESEND_FROM ?? 'no-reply@example.com';
+  const from = process.env.RESEND_FROM_EMAIL ?? 'no-reply@example.com';
   if (!apiKey) {
     console.error('resend: falta RESEND_API_KEY');
     return;
