@@ -84,6 +84,7 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tenant_id: tenantId,
+          tenant_slug: tenantSlug,
           start_at: selectedSlot.start_at,
           end_at: selectedSlot.end_at,
           full_name: values.full_name,

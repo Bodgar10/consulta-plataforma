@@ -12,6 +12,7 @@ type PaymentMode = 'card' | 'oxxo' | 'transfer' | 'credit';
 
 interface CreateBody {
   tenant_id: string;
+  tenant_slug: string;
   start_at: string;
   end_at: string;
   full_name: string;
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'json inválido' }, { status: 400 });
   }
 
-  const { tenant_id, start_at, end_at, full_name, email, phone, password, payment_mode, consent } =
+  const { tenant_id, tenant_slug, start_at, end_at, full_name, email, phone, password, payment_mode, consent } =
     body;
 
   if (!tenant_id || !start_at || !end_at || !full_name || !email || !phone || !payment_mode) {
@@ -215,8 +216,8 @@ export async function POST(req: NextRequest) {
       productName: 'Sesión',
       customerEmail: email,
       method: payment_mode === 'oxxo' ? 'oxxo' : 'card',
-      successUrl: `${appUrl}/${tenant_id}/agendar/gracias?appt=${apptId}`,
-      cancelUrl: `${appUrl}/${tenant_id}/agendar?cancelled=1`,
+      successUrl: `${appUrl}/${tenant_slug}/agendar/confirmacion?payment_mode=card&appt=${apptId}`,
+      cancelUrl: `${appUrl}/${tenant_slug}/agendar?cancelled=1`,
       metadata: { appointment_id: String(apptId), tenant_id },
     });
 
