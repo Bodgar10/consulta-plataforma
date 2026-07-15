@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { createClient } from "@/utils/supabase/client";
 
 const NAV_ITEMS = [
   { href: "/agenda", label: "Agenda" },
@@ -13,9 +14,17 @@ const NAV_ITEMS = [
 
 export function PanelNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.refresh();
+    router.push("/login");
+  }
 
   return (
-    <nav className="flex flex-col gap-1">
+    <nav className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-visible">
       {NAV_ITEMS.map((item) => {
         const isActive =
           pathname === item.href ||
@@ -25,15 +34,22 @@ export function PanelNav() {
             key={item.href}
             href={item.href}
             className={
-              isActive
+              (isActive
                 ? "btn-secondary justify-start"
-                : "btn-ghost justify-start px-5 py-2.5"
+                : "btn-ghost justify-start px-5 py-2.5") + " whitespace-nowrap shrink-0"
             }
           >
             {item.label}
           </Link>
         );
       })}
+      <button
+        type="button"
+        onClick={handleLogout}
+        className="btn-ghost justify-start px-5 py-2.5 whitespace-nowrap shrink-0 text-danger-600 md:mt-4"
+      >
+        Cerrar sesión
+      </button>
     </nav>
   );
 }
