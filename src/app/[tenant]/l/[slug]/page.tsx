@@ -8,6 +8,7 @@ import { Pricing } from '@/components/landing/Pricing';
 import { Testimonials } from '@/components/landing/Testimonials';
 import { EventsTeaser } from '@/components/landing/EventsTeaser';
 import { BookCTA } from '@/components/landing/BookCTA';
+import { TikTokCarousel } from '@/components/landing/TikTokCarousel';
 import { Reveal } from '@/components/motion/Reveal';
 
 type LandingBlock =
@@ -106,6 +107,11 @@ export default async function LandingSlugPage({
     typeof paymentSettings.session_price_cents === 'number' ? paymentSettings.session_price_cents : null;
   const acceptsTransfer = Boolean(paymentSettings.accepts_transfer);
 
+  const branding = (tenant.branding as unknown as Record<string, unknown>) ?? {};
+  const social = branding.social as
+    | { tiktok_videos?: { id: string; caption?: string }[]; follow?: { tiktok?: string } }
+    | undefined;
+
   // public_get_landing es RETURNS jsonb (escalar) → SIN .maybeSingle()
   const { data: landing, error } = await supabase.rpc('public_get_landing', {
     p_tenant_id: tenant.id,
@@ -175,6 +181,10 @@ export default async function LandingSlugPage({
           </Reveal>
         ))}
       </section>
+
+      {social?.tiktok_videos && social.tiktok_videos.length > 0 && social.follow?.tiktok && (
+        <TikTokCarousel videos={social.tiktok_videos} followUrl={social.follow.tiktok} />
+      )}
 
       <section className="max-w-2xl mx-auto px-4 pb-16">
         {(data.cta_type === 'magnet' || data.cta_type === 'lead_magnet') && (
