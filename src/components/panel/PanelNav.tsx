@@ -24,7 +24,9 @@ export function PanelNav() {
   }
 
   return (
-    <nav className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-visible">
+    <nav className="flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-visible relative
+      md:before:content-none before:content-[''] before:absolute before:right-0 before:top-0 before:bottom-0
+      before:w-8 before:bg-gradient-to-l before:from-cream-50 before:to-transparent before:pointer-events-none">
       {NAV_ITEMS.map((item) => {
         const isActive =
           pathname === item.href ||

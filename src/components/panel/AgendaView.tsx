@@ -160,15 +160,15 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
 
   return (
     <div className="border-hair rounded-[7px] px-3 py-2">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-sm tabular-nums text-pine-700">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <span className="text-sm tabular-nums text-pine-700 shrink-0">
             {start.toFormat("HH:mm")}–{end.toFormat("HH:mm")}
           </span>
           <span className="text-sm text-pine-900">{appointment.patient.full_name}</span>
-        </div>
-        <div className="flex items-center gap-2">
           <span className={badgeClass}>{label}</span>
+        </div>
+        <div className="flex items-center gap-2 flex-wrap">
           {canCancel && !reagendando && (
             <>
               <button className="btn-ghost" disabled={busy} onClick={() => setReagendando(true)}>
