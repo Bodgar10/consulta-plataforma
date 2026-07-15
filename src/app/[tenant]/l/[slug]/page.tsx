@@ -128,6 +128,17 @@ export default async function LandingSlugPage({
 
   return (
     <main className="min-h-screen bg-cream-50">
+      <header className="sticky top-0 z-10 bg-cream-50/90 backdrop-blur-sm border-b-[0.5px] border-sand-200">
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+          <span className="font-display font-medium text-pine-700 text-lg">
+            {tenant.display_name}
+          </span>
+          <a href="/login" className="btn-secondary">
+            Iniciar sesión
+          </a>
+        </div>
+      </header>
+
       <section className="px-6 pt-24 pb-16 md:pt-32 md:pb-20 flex flex-col items-center text-center">
         <p className="hero-fade-up text-sm font-medium tracking-wide text-pine-600 mb-5">
           Yolanda Miranda · Psicoanálisis
@@ -157,17 +168,6 @@ export default async function LandingSlugPage({
           )}
         </div>
       </section>
-
-      <header className="sticky top-0 z-10 bg-cream-50/90 backdrop-blur-sm border-b-[0.5px] border-sand-200">
-        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
-          <span className="font-display font-medium text-pine-700 text-lg">
-            {tenant.display_name}
-          </span>
-          <a href="/login" className="btn-secondary">
-            Iniciar sesión
-          </a>
-        </div>
-      </header>
 
       <div className="flex justify-center px-6 mt-8 mb-4">
         <BookCTA tenantSlug={tenantSlug} />
