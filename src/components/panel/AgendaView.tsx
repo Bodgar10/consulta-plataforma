@@ -171,7 +171,16 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
         <div className="flex items-center gap-2 flex-wrap">
           {canCancel && !reagendando && (
             <>
-              <button className="btn-ghost" disabled={busy} onClick={() => setReagendando(true)}>
+              <button
+                className="btn-ghost"
+                disabled={busy}
+                onClick={() => {
+                  setNewDate(start.toFormat("yyyy-MM-dd"));
+                  setNewStart(start.toFormat("HH:mm"));
+                  setNewEnd(end.toFormat("HH:mm"));
+                  setReagendando(true);
+                }}
+              >
                 Reagendar
               </button>
               <button className="btn-ghost" disabled={busy} onClick={handleCancelar}>

@@ -102,8 +102,8 @@ export function NuevaCitaModal({ open, onClose, onCreated, timezone }: NuevaCita
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="card max-w-md w-full">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4">
+      <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto">
         <h3 className="card-title mb-4">Nueva cita</h3>
 
         <div className="flex gap-2 mb-4">
@@ -155,23 +155,23 @@ export function NuevaCitaModal({ open, onClose, onCreated, timezone }: NuevaCita
           </div>
         )}
 
-        <div className="flex gap-3 mb-3">
-          <div className="flex-1">
+        <div className="flex flex-col sm:flex-row gap-3 mb-3">
+          <div className="flex-1 min-w-0">
             <label className="field-label">Fecha</label>
-            <input type="date" className="field" value={date} onChange={(e) => setDate(e.target.value)} />
+            <input type="date" className="field w-full" value={date} onChange={(e) => setDate(e.target.value)} />
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="field-label">Inicio</label>
             <input
               type="time"
-              className="field"
+              className="field w-full"
               value={startTime}
               onChange={(e) => setStartTime(e.target.value)}
             />
           </div>
-          <div>
+          <div className="min-w-0">
             <label className="field-label">Fin</label>
-            <input type="time" className="field" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <input type="time" className="field w-full" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
           </div>
         </div>
 
