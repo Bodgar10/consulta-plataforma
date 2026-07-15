@@ -14,6 +14,12 @@ interface AgendaViewProps {
 
 const CANCELABLE_STATUSES = ["pending_payment", "pending_verification", "confirmed"];
 
+const TIME_OPTIONS = Array.from({ length: 24 * 6 }, (_, i) => {
+  const hours = String(Math.floor(i / 6)).padStart(2, "0");
+  const minutes = String((i % 6) * 10).padStart(2, "0");
+  return `${hours}:${minutes}`;
+});
+
 export function AgendaView({ appointments, timezone, weekStart, onActionComplete }: AgendaViewProps) {
   const days = Array.from({ length: 7 }, (_, i) => weekStart.plus({ days: i }));
 
@@ -204,16 +210,19 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
           </div>
           <div>
             <label className="field-label">Inicio</label>
-            <input
-              type="time"
-              className="field"
-              value={newStart}
-              onChange={(e) => setNewStart(e.target.value)}
-            />
+            <select className="field" value={newStart} onChange={(e) => setNewStart(e.target.value)}>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="field-label">Fin</label>
-            <input type="time" className="field" value={newEnd} onChange={(e) => setNewEnd(e.target.value)} />
+            <select className="field" value={newEnd} onChange={(e) => setNewEnd(e.target.value)}>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
           <button className="btn-primary" disabled={busy} onClick={handleGuardarReagendo}>
             Guardar

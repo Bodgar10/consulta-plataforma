@@ -18,6 +18,12 @@ interface RecurrenciaModalProps {
 
 type PaymentMode = "transfer" | "external" | "credit";
 
+const TIME_OPTIONS = Array.from({ length: 24 * 6 }, (_, i) => {
+  const hours = String(Math.floor(i / 6)).padStart(2, "0");
+  const minutes = String((i % 6) * 10).padStart(2, "0");
+  return `${hours}:${minutes}`;
+});
+
 export function RecurrenciaModal({ open, onClose, onCreated, timezone }: RecurrenciaModalProps) {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [mode, setMode] = useState<"existing" | "new">("existing");
@@ -107,8 +113,8 @@ export function RecurrenciaModal({ open, onClose, onCreated, timezone }: Recurre
   }
 
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50">
-      <div className="card max-w-md w-full">
+    <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 px-4">
+      <div className="card max-w-md w-full max-h-[90vh] overflow-y-auto">
         <h3 className="card-title mb-2">Cita recurrente</h3>
         <p className="muted mb-4">
           Se crean todas de un jalón. Si una fecha choca, no se crea ninguna.
@@ -175,16 +181,19 @@ export function RecurrenciaModal({ open, onClose, onCreated, timezone }: Recurre
           </div>
           <div>
             <label className="field-label">Inicio</label>
-            <input
-              type="time"
-              className="field"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-            />
+            <select className="field" value={startTime} onChange={(e) => setStartTime(e.target.value)}>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="field-label">Fin</label>
-            <input type="time" className="field" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <select className="field" value={endTime} onChange={(e) => setEndTime(e.target.value)}>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
           <div>
             <label className="field-label">Ocurrencias</label>
@@ -200,7 +209,7 @@ export function RecurrenciaModal({ open, onClose, onCreated, timezone }: Recurre
         </div>
         <p className="muted mb-3">
           Se repite cada{" "}
-          {firstDate ? DateTime.fromISO(firstDate).setLocale("es").toFormat("cccc") : "…"}.
+          {firstDate ? DateTime.fromISO(firstDate, { zone: timezone }).setLocale("es").toFormat("cccc") : "…"}.
         </p>
 
         <div className="mb-4">

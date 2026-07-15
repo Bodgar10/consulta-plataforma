@@ -18,6 +18,12 @@ interface NuevaCitaModalProps {
 
 type PaymentMode = "transfer" | "external" | "credit";
 
+const TIME_OPTIONS = Array.from({ length: 24 * 6 }, (_, i) => {
+  const hours = String(Math.floor(i / 6)).padStart(2, "0");
+  const minutes = String((i % 6) * 10).padStart(2, "0");
+  return `${hours}:${minutes}`;
+});
+
 export function NuevaCitaModal({ open, onClose, onCreated, timezone }: NuevaCitaModalProps) {
   const [patients, setPatients] = useState<Patient[]>([]);
   const [mode, setMode] = useState<"existing" | "new">("existing");
@@ -162,16 +168,19 @@ export function NuevaCitaModal({ open, onClose, onCreated, timezone }: NuevaCita
           </div>
           <div className="min-w-0">
             <label className="field-label">Inicio</label>
-            <input
-              type="time"
-              className="field w-full"
-              value={startTime}
-              onChange={(e) => setStartTime(e.target.value)}
-            />
+            <select className="field w-full" value={startTime} onChange={(e) => setStartTime(e.target.value)}>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
           <div className="min-w-0">
             <label className="field-label">Fin</label>
-            <input type="time" className="field w-full" value={endTime} onChange={(e) => setEndTime(e.target.value)} />
+            <select className="field w-full" value={endTime} onChange={(e) => setEndTime(e.target.value)}>
+              {TIME_OPTIONS.map((t) => (
+                <option key={t} value={t}>{t}</option>
+              ))}
+            </select>
           </div>
         </div>
 
