@@ -158,13 +158,18 @@ export default async function LandingSlugPage({
         </div>
       </section>
 
-      <div className="flex justify-end px-6 pt-6">
-        <a href="/login" className="btn-ghost">
-          Iniciar sesión
-        </a>
-      </div>
+      <header className="sticky top-0 z-10 bg-cream-50/90 backdrop-blur-sm border-b-[0.5px] border-sand-200">
+        <div className="max-w-4xl mx-auto px-6 h-16 flex items-center justify-between">
+          <span className="font-display font-medium text-pine-700 text-lg">
+            {tenant.display_name}
+          </span>
+          <a href="/login" className="btn-secondary">
+            Iniciar sesión
+          </a>
+        </div>
+      </header>
 
-      <div className="flex justify-center px-6 mt-4 mb-4">
+      <div className="flex justify-center px-6 mt-8 mb-4">
         <BookCTA tenantSlug={tenantSlug} />
       </div>
 
