@@ -8,9 +8,13 @@ type TikTokVideo = { id: string; caption?: string };
 export function TikTokCarousel({
   videos,
   followUrl,
+  youtubeUrl,
+  instagramUrl,
 }: {
   videos: TikTokVideo[];
   followUrl: string;
+  youtubeUrl?: string | null;
+  instagramUrl?: string | null;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -45,13 +49,21 @@ export function TikTokCarousel({
   return (
     <section className="max-w-4xl mx-auto px-6 py-12 md:py-16">
       <Reveal>
-        <p className="text-sm font-medium tracking-wide text-pine-600 text-center mb-3">
-          Algo de mis redes
-        </p>
-        <div className="flex justify-center mb-8">
-          <a href={followUrl} target="_blank" rel="noopener noreferrer" className="btn-primary">
+        <h2 className="section-title text-center mb-8">Algo de mis redes</h2>
+        <div className="flex flex-wrap justify-center gap-3 mb-8">
+          <a href={followUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
             Sígueme en TikTok
           </a>
+          {youtubeUrl && (
+            <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+              Sígueme en YouTube
+            </a>
+          )}
+          {instagramUrl && (
+            <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="btn-secondary">
+              Sígueme en Instagram
+            </a>
+          )}
         </div>
       </Reveal>
 

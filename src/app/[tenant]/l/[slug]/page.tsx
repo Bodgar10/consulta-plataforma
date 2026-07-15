@@ -109,7 +109,10 @@ export default async function LandingSlugPage({
 
   const branding = (tenant.branding as unknown as Record<string, unknown>) ?? {};
   const social = branding.social as
-    | { tiktok_videos?: { id: string; caption?: string }[]; follow?: { tiktok?: string } }
+    | {
+        tiktok_videos?: { id: string; caption?: string }[];
+        follow?: { tiktok?: string; youtube?: string; instagram?: string };
+      }
     | undefined;
 
   // public_get_landing es RETURNS jsonb (escalar) → SIN .maybeSingle()
@@ -183,7 +186,12 @@ export default async function LandingSlugPage({
       </section>
 
       {social?.tiktok_videos && social.tiktok_videos.length > 0 && social.follow?.tiktok && (
-        <TikTokCarousel videos={social.tiktok_videos} followUrl={social.follow.tiktok} />
+        <TikTokCarousel
+          videos={social.tiktok_videos}
+          followUrl={social.follow.tiktok}
+          youtubeUrl={social.follow.youtube}
+          instagramUrl={social.follow.instagram}
+        />
       )}
 
       <section className="max-w-2xl mx-auto px-4 pb-16">
