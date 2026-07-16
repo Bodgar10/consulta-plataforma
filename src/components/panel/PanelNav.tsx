@@ -10,6 +10,7 @@ const NAV_ITEMS = [
   { href: "/cobros", label: "Cobros" },
   { href: "/agenda/horarios", label: "Horarios" },
   { href: "/paquetes", label: "Paquetes" },
+  { href: "/eventos", label: "Eventos" },
 ] as const;
 
 export function PanelNav() {
