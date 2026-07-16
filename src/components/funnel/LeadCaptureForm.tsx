@@ -23,6 +23,7 @@ export function LeadCaptureForm({ tenantId, tenantSlug, landingSlug, leadMagnetP
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [magnetUrl, setMagnetUrl] = useState<string | null>(null);
   const [acceptedConsent, setAcceptedConsent] = useState(false);
+  const [wantsEventNotifications, setWantsEventNotifications] = useState(false);
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -47,6 +48,7 @@ export function LeadCaptureForm({ tenantId, tenantSlug, landingSlug, leadMagnetP
           utm_content: utm?.utm_content ?? undefined,
           utm_term: utm?.utm_term ?? undefined,
           referrer: utm?.referrer ?? undefined,
+          wants_event_notifications: wantsEventNotifications,
         }),
       });
 
@@ -113,6 +115,15 @@ export function LeadCaptureForm({ tenantId, tenantSlug, landingSlug, leadMagnetP
         variant="contact"
         className="mb-4"
       />
+
+      <label className="flex items-center gap-2 text-sm text-pine-700 mb-4">
+        <input
+          type="checkbox"
+          checked={wantsEventNotifications}
+          onChange={(e) => setWantsEventNotifications(e.target.checked)}
+        />
+        Avísame por correo cuando haya talleres o cursos nuevos
+      </label>
       <button type="submit" disabled={status === 'submitting' || !acceptedConsent} className="btn-primary w-full">
         {status === 'submitting' ? 'Enviando…' : 'Quiero recibirlo'}
       </button>

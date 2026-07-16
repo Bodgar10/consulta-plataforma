@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
+import { ensureEventRoom } from '@/lib/events/ensure-room';
 import type { Database } from '@/types/database';
 
 type LiveEventUpdate = Database['public']['Tables']['live_events']['Update'];
@@ -48,6 +49,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (error) {
     console.error('panel/eventos PATCH error', params.id, error);
     return NextResponse.json({ error: 'error_interno', message: error.message }, { status: 500 });
+  }
+
+  if (updates.published === true && updated && !updated.video_room_url) {
+    const roomUrl = await ensureEventRoom(supabase, params.id);
+    if (roomUrl) updated.video_room_url = roomUrl;
   }
 
   return NextResponse.json({ event: updated });

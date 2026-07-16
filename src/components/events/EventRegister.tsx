@@ -29,6 +29,7 @@ export function EventRegister({ tenantId, tenantSlug, eventId, priceCents, isFul
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [acceptedConsent, setAcceptedConsent] = useState(false);
+  const [wantsEventNotifications, setWantsEventNotifications] = useState(false);
 
   useEffect(() => {
     const supabase = createClient();
@@ -48,7 +49,13 @@ export function EventRegister({ tenantId, tenantSlug, eventId, priceCents, isFul
       const res = await fetch('/api/events/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tenant_id: tenantId, event_id: eventId, email, name }),
+        body: JSON.stringify({
+          tenant_id: tenantId,
+          event_id: eventId,
+          email,
+          name,
+          wants_event_notifications: wantsEventNotifications,
+        }),
       });
 
       const data = await res.json();
@@ -108,6 +115,15 @@ export function EventRegister({ tenantId, tenantSlug, eventId, priceCents, isFul
         variant="health"
         className="mb-4"
       />
+
+      <label className="flex items-center gap-2 text-sm text-pine-700 mb-4">
+        <input
+          type="checkbox"
+          checked={wantsEventNotifications}
+          onChange={(e) => setWantsEventNotifications(e.target.checked)}
+        />
+        Avísame por correo cuando haya más talleres o cursos
+      </label>
       <button type="submit" disabled={status === 'submitting' || !acceptedConsent} className="btn-primary w-full">
         {status === 'submitting' ? 'Procesando…' : priceCents ? 'Continuar al pago' : 'Reservar mi lugar'}
       </button>

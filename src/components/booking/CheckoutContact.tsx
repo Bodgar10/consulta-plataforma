@@ -11,6 +11,7 @@ export interface ContactPayload {
   password?: string;
   payment_mode: "single" | "transfer";
   accepted_consent: boolean;
+  wants_event_notifications: boolean;
 }
 
 interface CheckoutContactProps {
@@ -53,6 +54,7 @@ export default function CheckoutContact({
   const [wantsAccount, setWantsAccount] = useState(false);
   const [paymentMode, setPaymentMode] = useState<"single" | "transfer">("single");
   const [acceptedConsent, setAcceptedConsent] = useState(false);
+  const [wantsEventNotifications, setWantsEventNotifications] = useState(false);
 
   // Revisa sesión existente para saltar la captura de contacto (login NO forzoso).
   // Si hay sesión, precarga los datos de contacto desde `patients` (bajo RLS de
@@ -125,12 +127,24 @@ export default function CheckoutContact({
     />
   );
 
+  const eventNotificationsCheckbox = (
+    <label className="flex items-center gap-2 text-sm text-pine-700">
+      <input
+        type="checkbox"
+        checked={wantsEventNotifications}
+        onChange={(e) => setWantsEventNotifications(e.target.checked)}
+      />
+      Avísame por correo cuando haya talleres o cursos nuevos
+    </label>
+  );
+
   if (hasSession) {
     return (
       <div className="card space-y-4">
         <p className="muted">Ya tienes una cuenta. Continúa para confirmar tu cita.</p>
         {paymentModeSelector}
         {consentCheckbox}
+        {eventNotificationsCheckbox}
         <button
           className="btn-primary w-full"
           disabled={submitting || !acceptedConsent}
@@ -141,6 +155,7 @@ export default function CheckoutContact({
               phone: sessionContact?.phone ?? "",
               payment_mode: paymentMode,
               accepted_consent: acceptedConsent,
+              wants_event_notifications: wantsEventNotifications,
             })
           }
         >
@@ -159,6 +174,7 @@ export default function CheckoutContact({
       password: wantsAccount && password ? password : undefined,
       payment_mode: paymentMode,
       accepted_consent: acceptedConsent,
+      wants_event_notifications: wantsEventNotifications,
     });
   }
 
@@ -229,6 +245,7 @@ export default function CheckoutContact({
 
       {paymentModeSelector}
       {consentCheckbox}
+      {eventNotificationsCheckbox}
 
       {errorMessage && <p className="field-error">{errorMessage}</p>}
 

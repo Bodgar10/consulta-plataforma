@@ -14,6 +14,7 @@ interface LiveEvent {
   status: string;
   published: boolean;
   created_at: string;
+  video_room_url: string | null;
 }
 
 interface Registration {
@@ -73,6 +74,9 @@ export default function EventosPage() {
   const [loadingInscritos, setLoadingInscritos] = useState(false);
 
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+  const [confirmAnunciar, setConfirmAnunciar] = useState<string | null>(null);
+  const [anunciando, setAnunciando] = useState(false);
+  const [anuncioResultado, setAnuncioResultado] = useState<Record<string, string>>({});
 
   const cargar = useCallback(() => {
     setLoading(true);
@@ -178,6 +182,23 @@ export default function EventosPage() {
     await fetch(`/api/panel/eventos/${id}`, { method: "DELETE" });
     setConfirmDelete(null);
     cargar();
+  }
+
+  async function handleAnunciar(id: string) {
+    setAnunciando(true);
+    try {
+      const res = await fetch(`/api/panel/eventos/${id}/anunciar`, { method: "POST" });
+      const data = await res.json();
+      setAnuncioResultado((prev) => ({
+        ...prev,
+        [id]: res.ok ? `Enviado a ${data.sent} de ${data.total} personas.` : "No se pudo enviar.",
+      }));
+    } catch {
+      setAnuncioResultado((prev) => ({ ...prev, [id]: "No se pudo enviar." }));
+    } finally {
+      setAnunciando(false);
+      setConfirmAnunciar(null);
+    }
   }
 
   async function handleVerInscritos(id: string) {
@@ -356,6 +377,17 @@ export default function EventosPage() {
                     <span className={ev.published ? "badge-confirmed mt-2 inline-flex" : "badge-pending mt-2 inline-flex"}>
                       {ev.published ? "Publicado" : "Borrador"}
                     </span>
+                    {anuncioResultado[ev.id] && (
+                      <p className="muted mt-1">{anuncioResultado[ev.id]}</p>
+                    )}
+                    {ev.video_room_url && (
+                      <p className="muted mt-1">
+                        Sala:{" "}
+                        <a href={ev.video_room_url} target="_blank" rel="noopener noreferrer" className="text-pine-700 underline">
+                          {ev.video_room_url}
+                        </a>
+                      </p>
+                    )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     <button className="btn-secondary" onClick={() => handleTogglePublicado(ev)}>
@@ -364,6 +396,21 @@ export default function EventosPage() {
                     <button className="btn-secondary" onClick={() => handleVerInscritos(ev.id)}>
                       Ver inscritos
                     </button>
+                    {confirmAnunciar === ev.id ? (
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-pine-700">¿Avisar por correo a todos los que dieron su ok?</span>
+                        <button className="btn-primary" disabled={anunciando} onClick={() => handleAnunciar(ev.id)}>
+                          {anunciando ? "Enviando…" : "Sí, avisar"}
+                        </button>
+                        <button className="btn-ghost" onClick={() => setConfirmAnunciar(null)}>
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <button className="btn-secondary" onClick={() => setConfirmAnunciar(ev.id)}>
+                        Anunciar por correo
+                      </button>
+                    )}
                     <button className="btn-ghost" onClick={() => handleEditar(ev)}>
                       Editar
                     </button>

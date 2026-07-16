@@ -96,6 +96,7 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
           payment_mode: values.payment_mode,
           // privacy_version la ancla el servidor (Opus O-B3); el cliente ya no la envía.
           consent: { accepted: values.accepted_consent },
+          wants_event_notifications: values.wants_event_notifications,
         }),
       });
 

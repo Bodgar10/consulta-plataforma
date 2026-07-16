@@ -28,7 +28,7 @@ export async function GET() {
 
   const { data: events, error } = await supabase
     .from('live_events')
-    .select('id, title, description, start_at, end_at, capacity, price_cents, status, published, created_at')
+    .select('id, title, description, start_at, end_at, capacity, price_cents, status, published, created_at, video_room_url')
     .eq('tenant_id', tenantId)
     .order('start_at', { ascending: false });
 

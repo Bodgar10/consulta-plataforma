@@ -13,6 +13,7 @@ export async function POST(req: NextRequest) {
   const name = b?.name ? String(b.name).trim() : null;
   const phone = b?.phone ? String(b.phone).trim() : null;
   const landingSlug = b?.landing_slug ? String(b.landing_slug) : null;
+  const wantsEventNotifications = Boolean(b?.wants_event_notifications);
 
   if (!tenantId || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
     return NextResponse.json({ error: 'bad_request' }, { status: 400 });
@@ -52,6 +53,7 @@ export async function POST(req: NextRequest) {
     p_utm_content: b?.utm_content ?? null,
     p_utm_term: b?.utm_term ?? null,
     p_referrer: b?.referrer ?? null,
+    p_wants_event_notifications: wantsEventNotifications,
   });
   if (error) {
     return NextResponse.json({ error: 'capture_failed' }, { status: 400 });

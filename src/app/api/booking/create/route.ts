@@ -22,6 +22,7 @@ interface CreateBody {
   payment_mode: PaymentMode;
   // La versión la ancla el servidor (O-B3); el cliente solo comunica accepted.
   consent: { accepted: boolean };
+  wants_event_notifications?: boolean;
 }
 
 function isSlotConflict(err: unknown): boolean {
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'json inválido' }, { status: 400 });
   }
 
-  const { tenant_id, tenant_slug, start_at, end_at, full_name, email, phone, password, payment_mode, consent } =
+  const { tenant_id, tenant_slug, start_at, end_at, full_name, email, phone, password, payment_mode, consent, wants_event_notifications } =
     body;
 
   if (!tenant_id || !start_at || !end_at || !full_name || !email || !phone || !payment_mode) {
@@ -174,6 +175,7 @@ export async function POST(req: NextRequest) {
       p_email: email,
       p_phone: phone,
       p_payment_mode: fnMode,
+      p_wants_event_notifications: wants_event_notifications ?? false,
     });
     if (error) {
       if (isSlotConflict(error)) {

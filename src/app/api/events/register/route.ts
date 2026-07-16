@@ -8,12 +8,14 @@ export const dynamic = 'force-dynamic';
 
 export async function POST(req: NextRequest) {
   let tenantId = '', eventId = '', email = '', name = '';
+  let wantsEventNotifications = false;
   try {
     const b = await req.json();
     tenantId = String(b?.tenant_id ?? '');
     eventId = String(b?.event_id ?? '');
     email = String(b?.email ?? '').trim().toLowerCase();
     name = String(b?.name ?? '').trim();
+    wantsEventNotifications = Boolean(b?.wants_event_notifications);
   } catch {
     return NextResponse.json({ error: 'bad_request' }, { status: 400 });
   }
@@ -41,9 +43,11 @@ export async function POST(req: NextRequest) {
   const { data: regId, error: regErr } = sessionUser
     ? await sessionClient.rpc('public_register_live_event_as_user', {
         p_tenant_id: tenantId, p_event_id: eventId, p_email: email, p_name: name,
+        p_wants_event_notifications: wantsEventNotifications,
       })
     : await supabase.rpc('public_register_live_event', {
         p_tenant_id: tenantId, p_event_id: eventId, p_email: email, p_name: name,
+        p_wants_event_notifications: wantsEventNotifications,
       });
   if (regErr) {
     const full = /lleno/i.test(regErr.message);
