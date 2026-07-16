@@ -9,6 +9,8 @@ type Props = {
   tenantId: string;
   tenantSlug: string;
   eventId: string;
+  eventTitle: string;
+  eventDate: string;
   priceCents: number | null;
   isFull: boolean;
 };
@@ -23,12 +25,13 @@ const ERROR_MESSAGES: Record<string, string> = {
   register_failed: 'No se pudo completar tu registro. Intenta de nuevo.',
 };
 
-export function EventRegister({ tenantId, tenantSlug, eventId, priceCents, isFull }: Props) {
+export function EventRegister({ tenantId, tenantSlug, eventId, eventTitle, eventDate, priceCents, isFull }: Props) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [acceptedConsent, setAcceptedConsent] = useState(false);
+  const [roomUrl, setRoomUrl] = useState<string | null>(null);
   const [wantsEventNotifications, setWantsEventNotifications] = useState(false);
 
   useEffect(() => {
@@ -71,6 +74,7 @@ export function EventRegister({ tenantId, tenantSlug, eventId, priceCents, isFul
       }
 
       if (data.status === 'registered') {
+        setRoomUrl(data.video_room_url ?? null);
         setStatus('confirmed_free');
         return;
       }
@@ -83,7 +87,7 @@ export function EventRegister({ tenantId, tenantSlug, eventId, priceCents, isFul
   }
 
   if (status === 'confirmed_free') {
-    return <EventRegisterConfirmation />;
+    return <EventRegisterConfirmation eventTitle={eventTitle} eventDate={eventDate} roomUrl={roomUrl} />;
   }
 
   if (isFull) {

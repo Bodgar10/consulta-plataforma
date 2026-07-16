@@ -93,7 +93,16 @@ export async function POST(req: NextRequest) {
     } catch (e) {
       console.error('confirmFreeEventRegistration best-effort failed', e);
     }
-    return NextResponse.json({ status: 'registered', registration_id: regId });
+    const { data: eventRow } = await supabase
+      .from('live_events')
+      .select('video_room_url')
+      .eq('id', eventId)
+      .single();
+    return NextResponse.json({
+      status: 'registered',
+      registration_id: regId,
+      video_room_url: eventRow?.video_room_url ?? null,
+    });
   }
 
   // 4) Pago (solo tarjeta). Lee stripe_account_id de payment_settings como booking.

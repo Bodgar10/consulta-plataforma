@@ -103,6 +103,7 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
       const data = (await res.json()) as {
         checkout_url?: string;
         status?: string;
+        appointment_id?: string;
         error?: string;
         message?: string;
       };
@@ -128,7 +129,7 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
         window.location.href = data.checkout_url;
         return;
       }
-      router.push(`/${tenantSlug}/agendar/confirmacion?payment_mode=${values.payment_mode}`);
+      router.push(`/${tenantSlug}/agendar/confirmacion?appt=${data.appointment_id}`);
     } catch {
       setSubmitError('Ocurrió un error. Intenta de nuevo.');
       setSubmitting(false);

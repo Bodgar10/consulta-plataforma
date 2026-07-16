@@ -218,7 +218,7 @@ export async function POST(req: NextRequest) {
       productName: 'Sesión',
       customerEmail: email,
       method: payment_mode === 'oxxo' ? 'oxxo' : 'card',
-      successUrl: `${appUrl}/${tenant_slug}/agendar/confirmacion?payment_mode=card&appt=${apptId}`,
+      successUrl: `${appUrl}/${tenant_slug}/agendar/confirmacion?appt=${apptId}`,
       cancelUrl: `${appUrl}/${tenant_slug}/agendar?cancelled=1`,
       metadata: { appointment_id: String(apptId), tenant_id },
     });

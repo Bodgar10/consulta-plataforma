@@ -1484,6 +1484,10 @@ export type Database = {
         }
         Returns: string
       }
+      public_get_appointment_status: {
+        Args: { p_appointment_id: string }
+        Returns: Json
+      }
       public_get_availability: {
         Args: { p_from: string; p_tenant_id: string; p_to: string }
         Returns: Json
