@@ -154,7 +154,7 @@ export default function MiCuentaPage() {
               return (
                 <div key={c.id} className="card">
                   <p className="text-lg text-pine-700 tabular-nums">
-                    {restantes} sesión{restantes === 1 ? '' : 'es'} disponible{restantes === 1 ? '' : 's'}
+                    {restantes} {restantes === 1 ? 'sesión disponible' : 'sesiones disponibles'}
                   </p>
                   <p className="muted mt-1">
                     Vence el {formatFecha(c.expires_at, tz).split(',')[0]}
