@@ -1447,6 +1447,7 @@ export type Database = {
           p_utm_medium: string
           p_utm_source: string
           p_utm_term: string
+          p_wants_event_notifications?: boolean
         }
         Returns: string
       }
@@ -1459,6 +1460,7 @@ export type Database = {
           p_phone: string
           p_start_at: string
           p_tenant_id: string
+          p_wants_event_notifications?: boolean
         }
         Returns: string
       }
@@ -1552,6 +1554,7 @@ export type Database = {
           p_event_id: string
           p_name: string
           p_tenant_id: string
+          p_wants_event_notifications?: boolean
         }
         Returns: string
       }
@@ -1561,6 +1564,7 @@ export type Database = {
           p_event_id: string
           p_name: string
           p_tenant_id: string
+          p_wants_event_notifications?: boolean
         }
         Returns: string
       }
