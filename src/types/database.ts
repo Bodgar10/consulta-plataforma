@@ -547,12 +547,14 @@ export type Database = {
           referrer: string | null
           status: string
           tenant_id: string
+          unsubscribe_token: string
           updated_at: string
           utm_campaign: string | null
           utm_content: string | null
           utm_medium: string | null
           utm_source: string | null
           utm_term: string | null
+          wants_event_notifications: boolean
         }
         Insert: {
           created_at?: string
@@ -565,12 +567,14 @@ export type Database = {
           referrer?: string | null
           status?: string
           tenant_id: string
+          unsubscribe_token?: string
           updated_at?: string
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          wants_event_notifications?: boolean
         }
         Update: {
           created_at?: string
@@ -583,12 +587,14 @@ export type Database = {
           referrer?: string | null
           status?: string
           tenant_id?: string
+          unsubscribe_token?: string
           updated_at?: string
           utm_campaign?: string | null
           utm_content?: string | null
           utm_medium?: string | null
           utm_source?: string | null
           utm_term?: string | null
+          wants_event_notifications?: boolean
         }
         Relationships: [
           {
@@ -811,6 +817,8 @@ export type Database = {
           payment_status: string
           stripe_payment_intent: string | null
           tenant_id: string
+          unsubscribe_token: string
+          wants_event_notifications: boolean
         }
         Insert: {
           auth_user_id?: string | null
@@ -822,6 +830,8 @@ export type Database = {
           payment_status?: string
           stripe_payment_intent?: string | null
           tenant_id: string
+          unsubscribe_token?: string
+          wants_event_notifications?: boolean
         }
         Update: {
           auth_user_id?: string | null
@@ -833,6 +843,8 @@ export type Database = {
           payment_status?: string
           stripe_payment_intent?: string | null
           tenant_id?: string
+          unsubscribe_token?: string
+          wants_event_notifications?: boolean
         }
         Relationships: [
           {
@@ -1122,7 +1134,9 @@ export type Database = {
           phone: string | null
           tenant_id: string
           timezone: string | null
+          unsubscribe_token: string
           updated_at: string
+          wants_event_notifications: boolean
         }
         Insert: {
           auth_user_id?: string | null
@@ -1135,7 +1149,9 @@ export type Database = {
           phone?: string | null
           tenant_id: string
           timezone?: string | null
+          unsubscribe_token?: string
           updated_at?: string
+          wants_event_notifications?: boolean
         }
         Update: {
           auth_user_id?: string | null
@@ -1148,7 +1164,9 @@ export type Database = {
           phone?: string | null
           tenant_id?: string
           timezone?: string | null
+          unsubscribe_token?: string
           updated_at?: string
+          wants_event_notifications?: boolean
         }
         Relationships: [
           {
@@ -1545,6 +1563,10 @@ export type Database = {
           p_tenant_id: string
         }
         Returns: string
+      }
+      public_unsubscribe_notifications: {
+        Args: { p_token: string }
+        Returns: Json
       }
     }
     Enums: {
