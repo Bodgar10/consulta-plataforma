@@ -1526,6 +1526,7 @@ export type Database = {
           timezone: string
         }[]
       }
+      public_get_tenant_slug: { Args: { p_tenant_id: string }; Returns: string }
       public_get_upcoming_events: {
         Args: { p_tenant_id: string }
         Returns: Json
