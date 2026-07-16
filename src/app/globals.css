@@ -119,3 +119,45 @@
   .event-meta {}
   .event-capacity-bar {}
 }
+
+/* ---- Tour guiado (driver.js), fuera de @layer components a propósito:
+   sobreescribe estilos inyectados por la librería con mayor especificidad ---- */
+.app-tour-popover.driver-popover {
+  background: #FBFAF7;
+  border-radius: 14px;
+  box-shadow: 0 12px 40px -12px rgba(31, 51, 46, 0.25);
+  font-family: "Inter", system-ui, sans-serif;
+}
+.app-tour-popover .driver-popover-title {
+  font-family: "Fraunces", Georgia, serif;
+  color: #2E4A44;
+  font-size: 1.125rem;
+  font-weight: 500;
+}
+.app-tour-popover .driver-popover-description {
+  color: #1F332E;
+  font-size: 0.875rem;
+}
+.app-tour-popover .driver-popover-progress-text {
+  color: #7A7161;
+  font-size: 0.75rem;
+}
+.app-tour-popover button.driver-popover-next-btn {
+  background: #C96F4A;
+  color: #FBFAF7;
+  border: none;
+  border-radius: 10px;
+  text-shadow: none;
+  padding: 6px 14px;
+}
+.app-tour-popover button.driver-popover-prev-btn {
+  background: transparent;
+  color: #2E4A44;
+  border: 0.5px solid #D8D2C4;
+  border-radius: 10px;
+  text-shadow: none;
+  padding: 6px 14px;
+}
+.driver-popover-navigation-btns {
+  gap: 8px;
+}

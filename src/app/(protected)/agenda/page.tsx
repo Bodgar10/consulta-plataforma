@@ -5,6 +5,67 @@ import { DateTime } from "luxon";
 import { AgendaView } from "@/components/panel/AgendaView";
 import { NuevaCitaModal } from "@/components/panel/NuevaCitaModal";
 import { RecurrenciaModal } from "@/components/panel/RecurrenciaModal";
+import { useTour } from "@/lib/tour/useTour";
+
+const AGENDA_TOUR_BASE_STEPS = [
+  {
+    element: "[data-tour='nueva-cita']",
+    popover: {
+      title: "Crear una cita nueva",
+      description: "Aquí agregas una cita a mano — para un paciente que ya tienes o uno nuevo.",
+    },
+  },
+  {
+    element: "[data-tour='cita-recurrente']",
+    popover: {
+      title: "Citas que se repiten",
+      description: "Si un paciente viene cada semana, aquí creas todas sus citas de un jalón.",
+    },
+  },
+  {
+    element: "[data-tour='semana-nav']",
+    popover: {
+      title: "Cambiar de semana",
+      description: "Con estos botones te mueves a la semana anterior o siguiente.",
+    },
+  },
+];
+
+const AGENDA_TOUR_ROW_STEPS = [
+  {
+    element: "[data-tour='appointment-badge']",
+    popover: {
+      title: "El estado de cada cita",
+      description:
+        "Esta etiqueta te dice si falta que paguen (Esperando pago), si ya está lista (Confirmada), si hay que revisar una transferencia (Por verificar), o si se canceló.",
+    },
+  },
+  {
+    element: "[data-tour='appointment-row']",
+    popover: {
+      title: "Ver el link de la sesión",
+      description: "Toca cualquier cita para ver el enlace de la videollamada, si ya está lista.",
+    },
+  },
+];
+
+const AGENDA_TOUR_REAGENDAR_STEP = {
+  element: "[data-tour='appointment-reagendar']",
+  popover: {
+    title: "Cambiar fecha u hora",
+    description: "Aquí reagendas o cancelas una cita. Al abrirlo la primera vez, te explico cómo funciona.",
+  },
+};
+
+const CANCELABLE_STATUSES_FOR_TOUR = ["pending_payment", "pending_verification", "confirmed"];
+
+const AGENDA_TOUR_EMPTY_STEP = {
+  popover: {
+    title: "Cuando tengas citas",
+    description:
+      "Esta semana no tiene citas todavía. En cuanto agendes una (o un paciente reserve), aparecerá aquí con su estado y las opciones para reagendar o cancelar.",
+  },
+};
 
 export interface PanelAppointment {
   id: string;
@@ -79,12 +140,36 @@ export default function AgendaPage() {
 
   const ready = !!timezone;
 
+  // Los pasos que apuntan a una fila solo existen si hay citas renderizadas;
+  // driver.js saltaría los pasos sin elemento, dejando el tour incompleto en
+  // silencio. Se arman aquí (no como constante fija) para reflejar el estado real.
+  const hasVisibleAppointment = appointments.some((a) =>
+    DateTime.fromISO(a.start_at, { zone: "utc" }).setZone(timezone ?? "utc").hasSame(weekStart, "week")
+  );
+  const hasCancelableAppointment = appointments.some((a) =>
+    CANCELABLE_STATUSES_FOR_TOUR.includes(a.status)
+  );
+  const tourSteps = hasVisibleAppointment
+    ? [
+        ...AGENDA_TOUR_BASE_STEPS,
+        ...AGENDA_TOUR_ROW_STEPS,
+        ...(hasCancelableAppointment ? [AGENDA_TOUR_REAGENDAR_STEP] : []),
+      ]
+    : [...AGENDA_TOUR_BASE_STEPS, AGENDA_TOUR_EMPTY_STEP];
+  const { startTour } = useTour(tourSteps);
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <h1 className="page-title">Agenda</h1>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+          <h1 className="page-title">Agenda</h1>
+          <button type="button" className="btn-ghost self-start" onClick={startTour}>
+            ¿Cómo funciona esto?
+          </button>
+        </div>
         <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 md:flex-wrap">
           <button
+            data-tour="nueva-cita"
             className="btn-primary whitespace-nowrap shrink-0"
             disabled={!ready}
             onClick={() => setShowNuevaCita(true)}
@@ -92,24 +177,27 @@ export default function AgendaPage() {
             Nueva cita
           </button>
           <button
+            data-tour="cita-recurrente"
             className="btn-secondary whitespace-nowrap shrink-0"
             disabled={!ready}
             onClick={() => setShowRecurrencia(true)}
           >
             Cita recurrente
           </button>
-          <button
-            className="btn-secondary whitespace-nowrap shrink-0"
-            onClick={() => setWeekStart((d) => d.minus({ weeks: 1 }))}
-          >
-            Semana anterior
-          </button>
-          <button
-            className="btn-secondary whitespace-nowrap shrink-0"
-            onClick={() => setWeekStart((d) => d.plus({ weeks: 1 }))}
-          >
-            Semana siguiente
-          </button>
+          <div data-tour="semana-nav" className="flex gap-2">
+            <button
+              className="btn-secondary whitespace-nowrap shrink-0"
+              onClick={() => setWeekStart((d) => d.minus({ weeks: 1 }))}
+            >
+              Semana anterior
+            </button>
+            <button
+              className="btn-secondary whitespace-nowrap shrink-0"
+              onClick={() => setWeekStart((d) => d.plus({ weeks: 1 }))}
+            >
+              Semana siguiente
+            </button>
+          </div>
         </div>
       </div>
 

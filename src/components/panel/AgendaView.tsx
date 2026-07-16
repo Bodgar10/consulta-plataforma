@@ -73,6 +73,7 @@ interface AppointmentRowProps {
 function AppointmentRow({ appointment, timezone, onActionComplete }: AppointmentRowProps) {
   const [reagendando, setReagendando] = useState(false);
   const [showLink, setShowLink] = useState(false);
+  const [showReagendarTip, setShowReagendarTip] = useState(false);
   const [newDate, setNewDate] = useState("");
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
@@ -169,19 +170,29 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
     <div className="border-hair rounded-[7px] px-3 py-2">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
         <div
+          data-tour="appointment-row"
+          role="button"
+          tabIndex={0}
           className="flex flex-wrap items-center gap-x-3 gap-y-1 cursor-pointer"
           onClick={() => setShowLink((v) => !v)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              setShowLink((v) => !v);
+            }
+          }}
         >
           <span className="text-sm tabular-nums text-pine-700 shrink-0">
             {start.toFormat("HH:mm")}–{end.toFormat("HH:mm")}
           </span>
           <span className="text-sm text-pine-900">{appointment.patient.full_name}</span>
-          <span className={badgeClass}>{label}</span>
+          <span data-tour="appointment-badge" className={badgeClass}>{label}</span>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {canCancel && !reagendando && (
             <>
               <button
+                data-tour="appointment-reagendar"
                 className="btn-ghost"
                 disabled={busy}
                 onClick={() => {
@@ -189,6 +200,10 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
                   setNewStart(start.toFormat("HH:mm"));
                   setNewEnd(end.toFormat("HH:mm"));
                   setReagendando(true);
+                  if (!localStorage.getItem("tour_reagendar_visto")) {
+                    setShowReagendarTip(true);
+                    localStorage.setItem("tour_reagendar_visto", "1");
+                  }
                 }}
               >
                 Reagendar
@@ -208,6 +223,20 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
 
       {reagendando && (
         <div className="flex flex-wrap items-end gap-2 mt-2 pt-2 border-hair">
+          {showReagendarTip && (
+            <div className="w-full bg-pine-50 border-hair rounded-[7px] px-3 py-2 mb-1">
+              <p className="text-sm text-pine-700">
+                Aquí eliges la nueva fecha y hora, y le das <strong>Guardar</strong> para confirmar el cambio.
+              </p>
+              <button
+                type="button"
+                className="btn-ghost mt-1"
+                onClick={() => setShowReagendarTip(false)}
+              >
+                Entendido
+              </button>
+            </div>
+          )}
           <div>
             <label className="field-label">Fecha</label>
             <input type="date" className="field" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
