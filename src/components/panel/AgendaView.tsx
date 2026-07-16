@@ -72,6 +72,7 @@ interface AppointmentRowProps {
 
 function AppointmentRow({ appointment, timezone, onActionComplete }: AppointmentRowProps) {
   const [reagendando, setReagendando] = useState(false);
+  const [showLink, setShowLink] = useState(false);
   const [newDate, setNewDate] = useState("");
   const [newStart, setNewStart] = useState("");
   const [newEnd, setNewEnd] = useState("");
@@ -167,7 +168,10 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
   return (
     <div className="border-hair rounded-[7px] px-3 py-2">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <div
+          className="flex flex-wrap items-center gap-x-3 gap-y-1 cursor-pointer"
+          onClick={() => setShowLink((v) => !v)}
+        >
           <span className="text-sm tabular-nums text-pine-700 shrink-0">
             {start.toFormat("HH:mm")}–{end.toFormat("HH:mm")}
           </span>
@@ -230,6 +234,27 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
           <button className="btn-ghost" disabled={busy} onClick={() => setReagendando(false)}>
             Cancelar
           </button>
+        </div>
+      )}
+
+      {showLink && (
+        <div className="mt-2 pt-2 border-hair">
+          {appointment.status === "cancelled" ? (
+            <p className="muted">Esta cita fue cancelada.</p>
+          ) : appointment.video_room_url ? (
+            <a
+              href={appointment.video_room_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+            >
+              Unirme a la sesión
+            </a>
+          ) : (
+            <p className="muted">
+              El enlace de la videollamada se genera cuando se confirme el pago de la cita.
+            </p>
+          )}
         </div>
       )}
 
