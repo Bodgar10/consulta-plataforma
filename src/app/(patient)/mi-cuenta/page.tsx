@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { DateTime } from 'luxon';
 import { createClient } from '@/utils/supabase/client';
-import { getStatusBadge } from '@/lib/panel/status-badge';
+import { getStatusBadge, getEventBadge } from '@/lib/panel/status-badge';
 import { useTenantTimezone } from '@/lib/tenant/useTenantTimezone';
 
 type Appointment = {
@@ -18,14 +18,13 @@ type Appointment = {
 type EventRegistration = {
   id: string;
   live_event_id: string;
-  payment_status: 'free' | 'pending_payment' | 'paid';
+  payment_status: string;
   created_at: string;
-};
-
-const EVENT_BADGE: Record<EventRegistration['payment_status'], { badgeClass: string; label: string }> = {
-  free: { badgeClass: 'badge-confirmed', label: 'Registrado' },
-  pending_payment: { badgeClass: 'badge-pending', label: 'Pago pendiente' },
-  paid: { badgeClass: 'badge-confirmed', label: 'Pagado' },
+  live_events: {
+    title: string;
+    start_at: string;
+    video_room_url: string | null;
+  } | null;
 };
 
 function formatFecha(iso: string, timeZone: string | null) {
@@ -48,7 +47,7 @@ export default function MiCuentaPage() {
         .order('start_at', { ascending: false }),
       supabase
         .from('live_event_registrations')
-        .select('id, live_event_id, payment_status, created_at')
+        .select('id, live_event_id, payment_status, created_at, live_events(title, start_at, video_room_url)')
         .order('created_at', { ascending: false }),
     ]).then(([apptRes, regRes]) => {
       setAppointments((apptRes.data as Appointment[]) ?? []);
@@ -127,10 +126,21 @@ export default function MiCuentaPage() {
         <div className="mt-4 space-y-3">
           {(!registrations || registrations.length === 0) && <p className="muted">No tienes registros a eventos.</p>}
           {registrations?.map((reg) => {
-            const badge = EVENT_BADGE[reg.payment_status];
+            const badge = getEventBadge(reg.payment_status);
+            const event = reg.live_events;
             return (
               <div key={reg.id} className="card flex items-center justify-between">
-                <p className="text-body text-pine-900 tabular-nums">{formatFecha(reg.created_at, tz)}</p>
+                <div>
+                  <p className="text-body text-pine-900">{event?.title ?? 'Evento'}</p>
+                  {event?.start_at && (
+                    <p className="muted tabular-nums">{formatFecha(event.start_at, tz)}</p>
+                  )}
+                  {reg.payment_status !== 'pending_payment' && event?.video_room_url && (
+                    <a href={event.video_room_url} className="btn-primary mt-2 inline-block">
+                      Entrar a la sesión
+                    </a>
+                  )}
+                </div>
                 <span className={badge.badgeClass}>{badge.label}</span>
               </div>
             );

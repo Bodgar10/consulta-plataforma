@@ -1475,6 +1475,15 @@ export type Database = {
         }
         Returns: string
       }
+      public_ensure_patient_account: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_phone?: string
+          p_tenant_id: string
+        }
+        Returns: string
+      }
       public_get_availability: {
         Args: { p_from: string; p_tenant_id: string; p_to: string }
         Returns: Json

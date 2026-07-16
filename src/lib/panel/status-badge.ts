@@ -35,3 +35,18 @@ export function getStatusBadge(status: string): StatusBadgeInfo {
     }
   );
 }
+
+const EVENT_STATUS_MAP: Record<string, StatusBadgeInfo> = {
+  free: { badgeClass: "badge-confirmed", label: "Registrado" },
+  pending_payment: { badgeClass: "badge-pending", label: "Pago pendiente" },
+  paid: { badgeClass: "badge-confirmed", label: "Pagado" },
+};
+
+export function getEventBadge(paymentStatus: string): StatusBadgeInfo {
+  return (
+    EVENT_STATUS_MAP[paymentStatus] ?? {
+      badgeClass: "badge-pending",
+      label: paymentStatus,
+    }
+  );
+}

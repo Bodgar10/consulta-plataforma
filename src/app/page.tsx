@@ -18,7 +18,7 @@ export default async function Home() {
   }
 
   if (context?.tenant_slug) {
-    redirect(`/${context.tenant_slug}/mi-cuenta`);
+    redirect("/mi-cuenta");
   }
 
   // Sesión válida pero sin contexto reconocido (ni profesional ni paciente
