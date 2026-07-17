@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
+import { WhatsAppFab } from "@/components/shared/WhatsAppFab";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -30,6 +31,7 @@ export default function RootLayout({
     <html lang="es" className={`${fraunces.variable} ${inter.variable}`}>
       <body className="bg-cream-50 min-h-screen font-body text-pine-900">
         {children}
+        <WhatsAppFab />
       </body>
     </html>
   );
