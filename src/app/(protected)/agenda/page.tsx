@@ -6,6 +6,7 @@ import { AgendaView } from "@/components/panel/AgendaView";
 import { NuevaCitaModal } from "@/components/panel/NuevaCitaModal";
 import { RecurrenciaModal } from "@/components/panel/RecurrenciaModal";
 import { useTour } from "@/lib/tour/useTour";
+import { TourFab } from "@/components/panel/TourFab";
 
 const AGENDA_TOUR_BASE_STEPS = [
   {
@@ -161,12 +162,7 @@ export default function AgendaPage() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-          <h1 className="page-title">Agenda</h1>
-          <button type="button" className="btn-ghost self-start" onClick={startTour}>
-            ¿Cómo funciona esto?
-          </button>
-        </div>
+        <h1 className="page-title">Agenda</h1>
         <div className="flex gap-2 overflow-x-auto pb-1 md:pb-0 md:flex-wrap">
           <button
             data-tour="nueva-cita"
@@ -238,6 +234,8 @@ export default function AgendaPage() {
           onActionComplete={() => setReloadToken((t) => t + 1)}
         />
       )}
+
+      <TourFab onClick={startTour} />
     </div>
   );
 }
