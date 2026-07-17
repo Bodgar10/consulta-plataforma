@@ -2,6 +2,56 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { DateTime } from "luxon";
+import { useTour } from "@/lib/tour/useTour";
+import { TourFab } from "@/components/panel/TourFab";
+
+const EVENTOS_TOUR_BASE_STEPS = [
+  {
+    element: "[data-tour='evento-nuevo']",
+    popover: {
+      title: "Crear un taller o curso",
+      description: "Aquí defines título, fecha, cupo, y si es gratis o de pago. Nace como Borrador, nadie lo ve todavía.",
+    },
+  },
+];
+
+const EVENTOS_TOUR_CARD_STEPS = [
+  {
+    element: "[data-tour='evento-card']",
+    popover: {
+      title: "Tus eventos",
+      description: "Cada tarjeta es un taller o curso. Mientras diga Borrador, nadie puede verlo ni registrarse.",
+    },
+  },
+  {
+    element: "[data-tour='evento-publicar']",
+    popover: {
+      title: "Publicar",
+      description: "Al publicar, el evento aparece en tu página web para que la gente se registre, y se genera el enlace de la videollamada.",
+    },
+  },
+  {
+    element: "[data-tour='evento-inscritos']",
+    popover: {
+      title: "Ver quién se registró",
+      description: "Aquí ves la lista de personas inscritas, y puedes copiarla para tenerla a la mano.",
+    },
+  },
+  {
+    element: "[data-tour='evento-anunciar']",
+    popover: {
+      title: "Avisar por correo",
+      description: "Manda un correo a tus pacientes y contactos que pidieron que les avises de talleres nuevos, con un botón para que se registren.",
+    },
+  },
+];
+
+const EVENTOS_TOUR_EMPTY_STEP = {
+  popover: {
+    title: "Todavía no tienes eventos",
+    description: "Usa el botón de arriba para crear tu primer taller o curso.",
+  },
+};
 
 interface LiveEvent {
   id: string;
@@ -56,6 +106,14 @@ const TIME_OPTIONS = Array.from({ length: 24 * 6 }, (_, i) => {
 function formatPrice(cents: number | null) {
   if (!cents) return "Gratis";
   return (cents / 100).toLocaleString("es-MX", { style: "currency", currency: "MXN" });
+}
+
+function EventosTourFab({ hasEvents }: { hasEvents: boolean }) {
+  const steps = hasEvents
+    ? [...EVENTOS_TOUR_CARD_STEPS, ...EVENTOS_TOUR_BASE_STEPS]
+    : [EVENTOS_TOUR_EMPTY_STEP, ...EVENTOS_TOUR_BASE_STEPS];
+  const { startTour } = useTour(steps);
+  return <TourFab onClick={startTour} />;
 }
 
 export default function EventosPage() {
@@ -229,7 +287,7 @@ export default function EventosPage() {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
         <h1 className="page-title">Eventos</h1>
         {!showForm && (
-          <button className="btn-primary" onClick={handleNuevo}>
+          <button data-tour="evento-nuevo" className="btn-primary" onClick={handleNuevo}>
             + Nuevo evento
           </button>
         )}
@@ -350,6 +408,7 @@ export default function EventosPage() {
         </div>
       )}
 
+      {!loading && <EventosTourFab hasEvents={events.length > 0} />}
       {loading ? (
         <p className="muted">Cargando eventos…</p>
       ) : events.length === 0 ? (
@@ -363,7 +422,7 @@ export default function EventosPage() {
             const end = DateTime.fromISO(ev.end_at).setLocale("es");
             const isPast = start < DateTime.now();
             return (
-              <div key={ev.id} className="card">
+              <div key={ev.id} data-tour="evento-card" className="card">
                 <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-3">
                   <div>
                     <p className="card-title">{ev.title}</p>
@@ -390,10 +449,10 @@ export default function EventosPage() {
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
-                    <button className="btn-secondary" onClick={() => handleTogglePublicado(ev)}>
+                    <button data-tour="evento-publicar" className="btn-secondary" onClick={() => handleTogglePublicado(ev)}>
                       {ev.published ? "Despublicar" : "Publicar"}
                     </button>
-                    <button className="btn-secondary" onClick={() => handleVerInscritos(ev.id)}>
+                    <button data-tour="evento-inscritos" className="btn-secondary" onClick={() => handleVerInscritos(ev.id)}>
                       Ver inscritos
                     </button>
                     {confirmAnunciar === ev.id ? (
@@ -407,7 +466,7 @@ export default function EventosPage() {
                         </button>
                       </div>
                     ) : (
-                      <button className="btn-secondary" onClick={() => setConfirmAnunciar(ev.id)}>
+                      <button data-tour="evento-anunciar" className="btn-secondary" onClick={() => setConfirmAnunciar(ev.id)}>
                         Anunciar por correo
                       </button>
                     )}
