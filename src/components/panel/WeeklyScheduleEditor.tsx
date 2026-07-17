@@ -124,7 +124,7 @@ export function WeeklyScheduleEditor({ rules, onChanged }: WeeklyScheduleEditorP
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-5">
         {sortedRules.map((rule) => (
-          <div key={rule.id} className="bg-cream-0 border-hair rounded-[10px] p-4">
+          <div key={rule.id} data-tour="horario-card" className="bg-cream-0 border-hair rounded-[10px] p-4">
             <p className="card-title mb-1">{DIAS[rule.weekday]}</p>
             <p className="text-lg tabular-nums text-pine-700 mb-1">
               {rule.start_time.slice(0, 5)} – {rule.end_time.slice(0, 5)}
@@ -134,6 +134,7 @@ export function WeeklyScheduleEditor({ rules, onChanged }: WeeklyScheduleEditorP
             </p>
             <div className="flex items-center gap-2">
               <button
+                data-tour="horario-editar"
                 className="btn-secondary flex items-center gap-1.5"
                 onClick={() => handleEditar(rule)}
               >
@@ -151,7 +152,7 @@ export function WeeklyScheduleEditor({ rules, onChanged }: WeeklyScheduleEditorP
       </div>
 
       {!showForm && (
-        <button className="btn-primary" onClick={() => setShowForm(true)}>
+        <button data-tour="horario-nuevo" className="btn-primary" onClick={() => setShowForm(true)}>
           + Agregar horario
         </button>
       )}

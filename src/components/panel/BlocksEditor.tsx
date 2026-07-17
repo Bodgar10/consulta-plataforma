@@ -109,7 +109,7 @@ export function BlocksEditor({ blocks, onChanged }: BlocksEditorProps) {
       </div>
 
       {!showForm && (
-        <button className="btn-primary" onClick={() => setShowForm(true)}>
+        <button data-tour="bloqueo-nuevo" className="btn-primary" onClick={() => setShowForm(true)}>
           + Agregar bloqueo
         </button>
       )}
