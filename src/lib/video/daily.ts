@@ -29,7 +29,12 @@ export async function createDailyRoom(args: CreateRoomArgs): Promise<string | nu
       },
       body: JSON.stringify({
         name: args.name,
-        privacy: 'private',
+        // TODO(seguridad): privacy pública + URL con UUID como "secreto por
+        // oscuridad" — suficiente para desarrollo, pero antes de pacientes
+        // reales considerar tokens de acceso por persona (ver conversación
+        // del 19 jul 2026). Salas privadas sin token rechazan a TODOS,
+        // incluida la profesional, con "You are not allowed to join".
+        privacy: 'public',
         properties: {
           nbf,
           exp,
