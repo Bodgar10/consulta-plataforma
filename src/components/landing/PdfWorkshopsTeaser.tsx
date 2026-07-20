@@ -45,7 +45,9 @@ export async function PdfWorkshopsTeaser({
               {w.description && <p className="muted mt-2">{w.description}</p>}
               <p className="text-pine-700 font-medium mt-3 tabular-nums">{formatPrice(w.price_cents)}</p>
               {w.grants_free_session && (
-                <p className="muted mt-1">Incluye sesión de terapia gratis</p>
+                <div className="inline-flex items-center gap-1.5 bg-pine-50 text-pine-700 rounded-full px-3 py-1 mt-2 self-start">
+                  <span className="text-xs font-medium">✦ Incluye sesión gratis</span>
+                </div>
               )}
             </a>
           </Reveal>
