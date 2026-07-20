@@ -187,6 +187,11 @@ function AppointmentRow({ appointment, timezone, onActionComplete }: Appointment
           </span>
           <span className="text-sm text-pine-900">{appointment.patient.full_name}</span>
           <span data-tour="appointment-badge" className={badgeClass}>{label}</span>
+          {appointment.workshop_title && (
+            <span className="muted text-xs">
+              · Cita por compra del taller: {appointment.workshop_title}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-2 flex-wrap">
           {canCancel && !reagendando && (

@@ -40,6 +40,7 @@ export async function createDailyRoom(args: CreateRoomArgs): Promise<string | nu
           exp,
           enable_prejoin_ui: true,
           eject_at_room_exp: true,
+          lang: 'es',
         },
       }),
     });

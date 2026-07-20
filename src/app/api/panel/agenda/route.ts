@@ -30,7 +30,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('appointments')
-    .select('id, start_at, end_at, status, payment_mode, video_room_url, created_by, recurrence_group_id, patient:patients(id, full_name)')
+    .select('id, start_at, end_at, status, payment_mode, video_room_url, created_by, recurrence_group_id, patient:patients(id, full_name), credit:patient_credits(source_workshop_id, workshop:pdf_workshops(title))')
     .gte('start_at', from)
     .lte('start_at', to)
     .order('start_at', { ascending: true });
@@ -53,5 +53,18 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'tenant_timezone_missing' }, { status: 400 });
   }
 
-  return NextResponse.json({ appointments: data ?? [], timezone });
+  const appointments = (data ?? []).map((appt) => {
+    // La cadena anidada (credit -> workshop) puede venir como objeto o null
+    // según si hay credit_id y si ese crédito tiene source_workshop_id.
+    // Se desestructura `credit` fuera del objeto devuelto y se usa para derivar
+    // el título aplanado, sin dejarlo en la respuesta.
+    const { credit, ...rest } = appt;
+    const workshop = (credit as { workshop: { title: string } | null } | null)?.workshop ?? null;
+    return {
+      ...rest,
+      workshop_title: workshop?.title ?? null,
+    };
+  });
+
+  return NextResponse.json({ appointments, timezone });
 }

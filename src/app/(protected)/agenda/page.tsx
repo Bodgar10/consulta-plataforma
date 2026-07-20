@@ -78,6 +78,7 @@ export interface PanelAppointment {
   created_by: "patient" | "professional";
   recurrence_group_id: string | null;
   patient: { id: string; full_name: string };
+  workshop_title: string | null;
 }
 
 export default function AgendaPage() {
