@@ -7,6 +7,7 @@ import { AboutSessions } from '@/components/landing/AboutSessions';
 import { Pricing } from '@/components/landing/Pricing';
 import { Testimonials } from '@/components/landing/Testimonials';
 import { EventsTeaser } from '@/components/landing/EventsTeaser';
+import { PdfWorkshopsTeaser } from '@/components/landing/PdfWorkshopsTeaser';
 import { BookCTA } from '@/components/landing/BookCTA';
 import { TikTokCarousel } from '@/components/landing/TikTokCarousel';
 import { Reveal } from '@/components/motion/Reveal';
@@ -186,6 +187,7 @@ export default async function LandingSlugPage({
         tenantSlug={tenantSlug}
         timezone={tenant.timezone as string}
       />
+      <PdfWorkshopsTeaser tenantId={tenant.id} tenantSlug={tenantSlug} />
       <Testimonials />
 
       <section className="max-w-2xl mx-auto px-6 py-12 space-y-6">

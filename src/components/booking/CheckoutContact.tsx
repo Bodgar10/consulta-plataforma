@@ -9,9 +9,16 @@ export interface ContactPayload {
   email: string;
   phone: string;
   password?: string;
-  payment_mode: "single" | "transfer";
+  payment_mode: "single" | "transfer" | "credit";
   accepted_consent: boolean;
   wants_event_notifications: boolean;
+}
+
+interface CreditContext {
+  available: boolean;
+  email: string;
+  full_name: string | null;
+  workshop_title: string;
 }
 
 interface CheckoutContactProps {
@@ -22,6 +29,7 @@ interface CheckoutContactProps {
   tenantId: string;
   tenantSlug: string;
   sessionPriceCents?: number | null;
+  creditContext?: CreditContext | null;
 }
 
 function formatMXN(cents: number) {
@@ -40,6 +48,7 @@ export default function CheckoutContact({
   tenantId,
   tenantSlug,
   sessionPriceCents,
+  creditContext,
 }: CheckoutContactProps) {
   const [hasSession, setHasSession] = useState<boolean | null>(null);
   const [sessionContact, setSessionContact] = useState<{
@@ -47,8 +56,8 @@ export default function CheckoutContact({
     email: string;
     phone: string;
   } | null>(null);
-  const [fullName, setFullName] = useState("");
-  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState(creditContext?.full_name ?? "");
+  const [email, setEmail] = useState(creditContext?.email ?? "");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [wantsAccount, setWantsAccount] = useState(false);
@@ -137,6 +146,61 @@ export default function CheckoutContact({
       Avísame por correo cuando haya talleres o cursos nuevos
     </label>
   );
+
+  if (creditContext) {
+    const handleCreditSubmit = async (e: FormEvent) => {
+      e.preventDefault();
+      await onSubmit({
+        full_name: fullName,
+        email,
+        phone: "",
+        payment_mode: "credit",
+        accepted_consent: acceptedConsent,
+        wants_event_notifications: false,
+      });
+    };
+
+    return (
+      <form onSubmit={handleCreditSubmit} className="card space-y-4">
+        <h3 className="card-title">Tu sesión gratis</h3>
+        <p className="muted">
+          Vas a usar la sesión gratis de <strong>{creditContext.workshop_title}</strong>.
+        </p>
+
+        <div>
+          <label className="field-label" htmlFor="credit-full-name">Nombre completo</label>
+          <input
+            id="credit-full-name"
+            className="field"
+            type="text"
+            required
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+          />
+        </div>
+
+        <div>
+          <label className="field-label" htmlFor="credit-email">Correo (el mismo con el que compraste el taller)</label>
+          <input
+            id="credit-email"
+            className="field"
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </div>
+
+        {consentCheckbox}
+
+        {errorMessage && <p className="field-error">{errorMessage}</p>}
+
+        <button type="submit" className="btn-primary w-full" disabled={submitting || !acceptedConsent}>
+          {submitting ? "Procesando..." : "Confirmar mi cita gratis"}
+        </button>
+      </form>
+    );
+  }
 
   if (hasSession) {
     return (

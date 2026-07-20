@@ -12,18 +12,26 @@ interface ApiSlot {
   end: string;   // ISO UTC
 }
 
+interface CreditInfo {
+  available: boolean;
+  email: string;
+  full_name: string | null;
+  workshop_title: string;
+}
+
 interface BookingFlowProps {
   tenantId: string;
   tenantSlug: string;
   tenantTimezone: string;
   acceptsTransfer?: boolean;
   sessionPriceCents?: number | null;
+  creditInfo?: CreditInfo | null;
 }
 
 // Ventana de disponibilidad que pedimos; el endpoint la recorta por lead-time/horizonte.
 const HORIZON_DAYS = 45;
 
-export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acceptsTransfer, sessionPriceCents }: BookingFlowProps) {
+export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acceptsTransfer, sessionPriceCents, creditInfo }: BookingFlowProps) {
   const router = useRouter();
 
   const [slotsByDay, setSlotsByDay] = useState<Record<string, Slot[]>>({});
@@ -181,20 +189,30 @@ export default function BookingFlow({ tenantId, tenantSlug, tenantTimezone, acce
           tenantId={tenantId}
           tenantSlug={tenantSlug}
           sessionPriceCents={sessionPriceCents}
+          creditContext={creditInfo?.available ? creditInfo : null}
         />
       </div>
     );
   }
 
   return (
-    <SlotPicker
-      slotsByDay={slotsByDay}
-      selectedSlot={selectedSlot}
-      onSelectSlot={(slot) => {
-        setSubmitError(null);
-        setSelectedSlot(slot);
-      }}
-      tenantTimezone={tenantTimezone}
-    />
+    <>
+      {creditInfo && !creditInfo.available && (
+        <div className="card mb-4">
+          <p className="text-sm text-pine-700">
+            El enlace de sesión gratis de <strong>{creditInfo.workshop_title}</strong> ya fue usado o ya no está disponible. Puedes agendar normalmente aquí abajo.
+          </p>
+        </div>
+      )}
+      <SlotPicker
+        slotsByDay={slotsByDay}
+        selectedSlot={selectedSlot}
+        onSelectSlot={(slot) => {
+          setSubmitError(null);
+          setSelectedSlot(slot);
+        }}
+        tenantTimezone={tenantTimezone}
+      />
+    </>
   );
 }

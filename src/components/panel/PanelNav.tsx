@@ -11,6 +11,7 @@ const NAV_ITEMS = [
   { href: "/agenda/horarios", label: "Horarios" },
   { href: "/paquetes", label: "Paquetes" },
   { href: "/eventos", label: "Eventos" },
+  { href: "/talleres-pdf", label: "Talleres PDF" },
 ] as const;
 
 export function PanelNav() {

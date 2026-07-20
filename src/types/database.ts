@@ -1019,6 +1019,7 @@ export type Database = {
           active: boolean
           created_at: string
           id: string
+          is_public: boolean
           name: string
           price_cents: number
           sessions_count: number
@@ -1029,6 +1030,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          is_public?: boolean
           name: string
           price_cents: number
           sessions_count: number
@@ -1039,6 +1041,7 @@ export type Database = {
           active?: boolean
           created_at?: string
           id?: string
+          is_public?: boolean
           name?: string
           price_cents?: number
           sessions_count?: number
@@ -1065,6 +1068,7 @@ export type Database = {
           patient_id: string
           sessions_total: number
           sessions_used: number
+          source_workshop_id: string | null
           status: string
           stripe_payment_intent: string | null
           tenant_id: string
@@ -1079,6 +1083,7 @@ export type Database = {
           patient_id: string
           sessions_total: number
           sessions_used?: number
+          source_workshop_id?: string | null
           status?: string
           stripe_payment_intent?: string | null
           tenant_id: string
@@ -1093,6 +1098,7 @@ export type Database = {
           patient_id?: string
           sessions_total?: number
           sessions_used?: number
+          source_workshop_id?: string | null
           status?: string
           stripe_payment_intent?: string | null
           tenant_id?: string
@@ -1111,6 +1117,13 @@ export type Database = {
             columns: ["patient_id"]
             isOneToOne: false
             referencedRelation: "patients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "patient_credits_source_workshop_id_fkey"
+            columns: ["source_workshop_id"]
+            isOneToOne: false
+            referencedRelation: "pdf_workshops"
             referencedColumns: ["id"]
           },
           {
@@ -1178,6 +1191,114 @@ export type Database = {
           },
           {
             foreignKeyName: "patients_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdf_workshop_downloads: {
+        Row: {
+          auth_user_id: string | null
+          created_at: string
+          credit_id: string | null
+          email: string
+          id: string
+          name: string | null
+          payment_status: string
+          stripe_payment_intent: string | null
+          tenant_id: string
+          workshop_id: string
+        }
+        Insert: {
+          auth_user_id?: string | null
+          created_at?: string
+          credit_id?: string | null
+          email: string
+          id?: string
+          name?: string | null
+          payment_status?: string
+          stripe_payment_intent?: string | null
+          tenant_id: string
+          workshop_id: string
+        }
+        Update: {
+          auth_user_id?: string | null
+          created_at?: string
+          credit_id?: string | null
+          email?: string
+          id?: string
+          name?: string | null
+          payment_status?: string
+          stripe_payment_intent?: string | null
+          tenant_id?: string
+          workshop_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_workshop_downloads_credit_id_fkey"
+            columns: ["credit_id"]
+            isOneToOne: false
+            referencedRelation: "patient_credits"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pdf_workshop_downloads_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pdf_workshop_downloads_workshop_id_fkey"
+            columns: ["workshop_id"]
+            isOneToOne: false
+            referencedRelation: "pdf_workshops"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pdf_workshops: {
+        Row: {
+          created_at: string
+          description: string | null
+          file_path: string | null
+          grants_free_session: boolean
+          id: string
+          price_cents: number | null
+          published: boolean
+          tenant_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          grants_free_session?: boolean
+          id?: string
+          price_cents?: number | null
+          published?: boolean
+          tenant_id: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          file_path?: string | null
+          grants_free_session?: boolean
+          id?: string
+          price_cents?: number | null
+          published?: boolean
+          tenant_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pdf_workshops_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -1373,6 +1494,16 @@ export type Database = {
       }
       current_user_patient_ids: { Args: never; Returns: string[] }
       current_user_tenant_ids: { Args: never; Returns: string[] }
+      internal_grant_workshop_credit: {
+        Args: {
+          p_email: string
+          p_full_name: string
+          p_phone: string
+          p_tenant_id: string
+          p_workshop_id: string
+        }
+        Returns: string
+      }
       link_event_registrations_to_auth_user: {
         Args: { p_email: string; p_tenant_id: string }
         Returns: number
@@ -1505,6 +1636,7 @@ export type Database = {
         Returns: Json
       }
       public_get_packages: { Args: { p_tenant_id: string }; Returns: Json }
+      public_get_pdf_workshops: { Args: { p_tenant_id: string }; Returns: Json }
       public_get_published_landings: {
         Args: { p_tenant_id: string }
         Returns: Json
@@ -1535,6 +1667,10 @@ export type Database = {
         Args: { p_tenant_id: string }
         Returns: Json
       }
+      public_get_workshop_credit_status: {
+        Args: { p_download_id: string }
+        Returns: Json
+      }
       public_record_consent: {
         Args: {
           p_appointment_id: string
@@ -1562,6 +1698,15 @@ export type Database = {
         }
         Returns: string
       }
+      public_register_free_download: {
+        Args: {
+          p_email: string
+          p_name: string
+          p_tenant_id: string
+          p_workshop_id: string
+        }
+        Returns: string
+      }
       public_register_live_event: {
         Args: {
           p_email: string
@@ -1579,6 +1724,15 @@ export type Database = {
           p_name: string
           p_tenant_id: string
           p_wants_event_notifications?: boolean
+        }
+        Returns: string
+      }
+      public_register_paid_download: {
+        Args: {
+          p_email: string
+          p_name: string
+          p_tenant_id: string
+          p_workshop_id: string
         }
         Returns: string
       }

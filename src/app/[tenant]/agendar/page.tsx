@@ -28,14 +28,26 @@ async function getTenant(slug: string): Promise<TenantData | null> {
 
 export default async function AgendarPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ tenant: string }>;
+  searchParams: Promise<{ credito?: string }>;
 }) {
   const { tenant: paramSlug } = await params;
+  const { credito } = await searchParams;
   const slug = await getTenantSlug(paramSlug);
   const tenant = slug ? await getTenant(slug) : null;
 
   if (!tenant || !slug) notFound();
+
+  let creditInfo: { available: boolean; email: string; full_name: string | null; workshop_title: string } | null = null;
+  if (credito) {
+    const supabase = await createClient();
+    const { data } = await supabase.rpc('public_get_workshop_credit_status', {
+      p_download_id: credito,
+    });
+    creditInfo = data as typeof creditInfo;
+  }
 
   return (
     <main className="min-h-screen px-6 py-12">
@@ -52,6 +64,7 @@ export default async function AgendarPage({
           tenantTimezone={tenant.timezone}
           acceptsTransfer={tenant.payment_settings.accepts_transfer}
           sessionPriceCents={tenant.payment_settings.session_price_cents}
+          creditInfo={creditInfo}
         />
       </div>
     </main>

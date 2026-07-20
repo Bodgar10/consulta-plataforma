@@ -4,10 +4,71 @@ import { getStripe } from '@/lib/payments/stripe';
 import { createAdminClient } from '@/utils/supabase/admin';
 import { applyConfirmationEffects } from '@/lib/booking/confirm';
 import { confirmEventRegistration } from '@/lib/events/confirm-registration';
+import { createSignedDownloadUrl } from '@/lib/storage/workshop-files';
+import { sendWorkshopConfirmation } from '@/lib/email/workshop-confirmation';
 
 export const dynamic = 'force-dynamic';
 // Necesario para verificar la firma con el body crudo.
 export const runtime = 'nodejs';
+
+async function confirmWorkshopPurchase(
+  admin: ReturnType<typeof createAdminClient>,
+  args: { downloadId: string; workshopId: string; tenantId: string; paymentIntentId: string },
+): Promise<string> {
+  const { data: updated, error } = await admin
+    .from('pdf_workshop_downloads')
+    .update({ payment_status: 'paid', stripe_payment_intent: args.paymentIntentId })
+    .eq('id', args.downloadId)
+    .eq('payment_status', 'pending_payment')
+    .select('id, email, name')
+    .maybeSingle();
+
+  if (error) {
+    if ((error as { code?: string }).code === '23505') return 'idempotent_pi';
+    return 'update_error';
+  }
+  if (!updated) return 'idempotent_state';
+
+  const { data: workshop } = await admin
+    .from('pdf_workshops')
+    .select('title, file_path, grants_free_session')
+    .eq('id', args.workshopId)
+    .single();
+
+  if (!workshop?.file_path) return 'confirmed_no_file';
+
+  let freeSessionUrl: string | null = null;
+  if (workshop.grants_free_session) {
+    const { data: creditId } = await admin.rpc('internal_grant_workshop_credit', {
+      p_tenant_id: args.tenantId,
+      p_email: updated.email,
+      p_full_name: updated.name ?? '',
+      p_phone: null as unknown as string,
+      p_workshop_id: args.workshopId,
+    });
+    if (creditId) {
+      await admin.from('pdf_workshop_downloads').update({ credit_id: creditId }).eq('id', args.downloadId);
+      const { data: tenant } = await admin.from('tenants').select('slug').eq('id', args.tenantId).single();
+      if (tenant?.slug) {
+        const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
+        freeSessionUrl = `${base}/${tenant.slug}/agendar?credito=${args.downloadId}`;
+      }
+    }
+  }
+
+  const downloadUrl = await createSignedDownloadUrl(workshop.file_path);
+  if (downloadUrl) {
+    await sendWorkshopConfirmation({
+      email: updated.email,
+      name: updated.name,
+      workshopTitle: workshop.title,
+      downloadUrl,
+      freeSessionUrl,
+    });
+  }
+
+  return 'confirmed';
+}
 
 export async function POST(req: NextRequest) {
   const secret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -50,6 +111,19 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ received: true, event_registration: status });
       }
     }
+    // Compra de TALLER PDF: discriminada por download_id.
+    {
+      const downloadId = pi.metadata?.download_id;
+      const workshopId = pi.metadata?.workshop_id;
+      const wsTenantId = pi.metadata?.tenant_id;
+      if (downloadId && workshopId && wsTenantId && paymentIntentId) {
+        const admin = createAdminClient();
+        const status = await confirmWorkshopPurchase(admin, {
+          downloadId, workshopId, tenantId: wsTenantId, paymentIntentId,
+        });
+        return NextResponse.json({ received: true, workshop_purchase: status });
+      }
+    }
   } else if (event.type === 'checkout.session.completed') {
     const s = event.data.object as Stripe.Checkout.Session;
     // Sólo confirmamos si el pago está liquidado (OXXO puede quedar 'unpaid').
@@ -70,6 +144,19 @@ export async function POST(req: NextRequest) {
           registrationId: regId, liveEventId, tenantId: evTenantId, paymentIntentId,
         });
         return NextResponse.json({ received: true, event_registration: status });
+      }
+    }
+    // Compra de TALLER PDF: discriminada por download_id.
+    {
+      const downloadId = s.metadata?.download_id;
+      const workshopId = s.metadata?.workshop_id;
+      const wsTenantId = s.metadata?.tenant_id;
+      if (downloadId && workshopId && wsTenantId && paymentIntentId) {
+        const admin = createAdminClient();
+        const status = await confirmWorkshopPurchase(admin, {
+          downloadId, workshopId, tenantId: wsTenantId, paymentIntentId,
+        });
+        return NextResponse.json({ received: true, workshop_purchase: status });
       }
     }
   } else {
