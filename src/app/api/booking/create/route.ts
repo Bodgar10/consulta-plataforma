@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
   const { tenant_id, tenant_slug, start_at, end_at, full_name, email, phone, password, payment_mode, consent, wants_event_notifications } =
     body;
 
-  if (!tenant_id || !start_at || !end_at || !full_name || !email || !phone || !payment_mode) {
+  if (!tenant_id || !start_at || !end_at || !full_name || !email || !payment_mode) {
     return NextResponse.json({ error: 'faltan campos requeridos' }, { status: 400 });
   }
   // Datos de salud: consentimiento expreso obligatorio, validado en servidor.
