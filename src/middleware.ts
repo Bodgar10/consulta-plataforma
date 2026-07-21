@@ -76,15 +76,38 @@ export async function middleware(request: NextRequest) {
     slug = data?.slug ?? null;
   }
 
-  if (slug) {
-    supabaseResponse.headers.set("x-tenant-slug", slug);
+  // El slug se propaga en los headers de la REQUEST (no de la response): los
+  // Server Components leen con headers() de next/headers, que expone los
+  // entrantes. Un header puesto solo en la response viaja al navegador y
+  // getTenantSlug() nunca lo ve.
+  const requestHeaders = new Headers(request.headers);
+  if (slug) requestHeaders.set("x-tenant-slug", slug);
+  requestHeaders.set("x-tenant-resolved-via", resolved.via);
+
+  // Traslada las cookies de sesión que refrescó supabase a la respuesta final,
+  // sea cual sea la rama por la que salgamos.
+  const withSessionCookies = (res: NextResponse) => {
+    supabaseResponse.cookies.getAll().forEach((cookie) => res.cookies.set(cookie));
+    if (slug) res.headers.set("x-tenant-slug", slug);
+    res.headers.set("x-tenant-resolved-via", resolved.via);
+    return res;
+  };
+
+  const path = request.nextUrl.pathname;
+
+  // Dominio custom en la raíz: servir la landing del tenant sin cambiar la URL.
+  // Sin esto, "/" cae en app/page.tsx (router de sesión) y manda a /login.
+  if (resolved.via === "domain" && path === "/" && slug) {
+    const url = request.nextUrl.clone();
+    url.pathname = `/${slug}`;
+    return withSessionCookies(
+      NextResponse.rewrite(url, { request: { headers: requestHeaders } }),
+    );
   }
-  supabaseResponse.headers.set("x-tenant-resolved-via", resolved.via);
 
   // Rutas protegidas (panel profesional / portal paciente) sin sesión → login.
   // El panel vive en /[slug]/panel, así que matcheamos el segmento /panel en
   // cualquier posición, además de /mi-cuenta.
-  const path = request.nextUrl.pathname;
   const isProtected = path.startsWith("/mi-cuenta") || /\/panel(\/|$)/.test(path);
 
   if (isProtected && !user) {
@@ -93,7 +116,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  return supabaseResponse;
+  return withSessionCookies(
+    NextResponse.next({ request: { headers: requestHeaders } }),
+  );
 }
 
 export const config = {
