@@ -192,7 +192,7 @@ export async function POST(req: NextRequest) {
     // TRANSFERENCIA: brinca Connect. Devuelve datos bancarios para instrucciones.
     if (payment_mode === 'transfer') {
       // Enviar correo con instrucciones de transferencia y link de WhatsApp
-      void sendTransferInstructions({
+      await sendTransferInstructions({
         email,
         fullName: full_name,
         startAt: start_at,
