@@ -4,6 +4,7 @@ import { validateBookingWindow } from '@/lib/booking/validate';
 import { createCheckoutSession } from '@/lib/payments/checkout';
 import { applyConfirmationEffects } from '@/lib/booking/confirm';
 import { linkPatientAccount } from '@/lib/auth/link-account';
+import { sendTransferInstructions } from '@/lib/email/transfer-instructions';
 import type { BookingSettings } from '@/lib/booking/slots';
 
 export const dynamic = 'force-dynamic';
@@ -190,6 +191,18 @@ export async function POST(req: NextRequest) {
 
     // TRANSFERENCIA: brinca Connect. Devuelve datos bancarios para instrucciones.
     if (payment_mode === 'transfer') {
+      // Enviar correo con instrucciones de transferencia y link de WhatsApp
+      void sendTransferInstructions({
+        email,
+        fullName: full_name,
+        startAt: start_at,
+        timezone: tenant.timezone,
+        banco: (ps['banco'] as string) ?? null,
+        titular: (ps['titular'] as string) ?? null,
+        clabe: (ps['clabe'] as string) ?? null,
+        whatsapp: (ps['whatsapp'] as string) ?? null,
+      });
+
       return NextResponse.json({
         status: 'pending_verification',
         appointment_id: apptId,
