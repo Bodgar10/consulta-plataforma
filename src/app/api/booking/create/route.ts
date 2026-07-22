@@ -5,6 +5,8 @@ import { createCheckoutSession } from '@/lib/payments/checkout';
 import { applyConfirmationEffects } from '@/lib/booking/confirm';
 import { linkPatientAccount } from '@/lib/auth/link-account';
 import { sendTransferInstructions } from '@/lib/email/transfer-instructions';
+import { getOwnerEmail } from '@/lib/email/get-owner-email';
+import { sendOwnerNotification } from '@/lib/email/owner-notification';
 import type { BookingSettings } from '@/lib/booking/slots';
 
 export const dynamic = 'force-dynamic';
@@ -202,6 +204,46 @@ export async function POST(req: NextRequest) {
         clabe: (ps['clabe'] as string) ?? null,
         whatsapp: (ps['whatsapp'] as string) ?? null,
       });
+
+      // Notificar al owner de la nueva reserva pendiente
+      const ownerEmail = await getOwnerEmail(tenant_id);
+      if (ownerEmail) {
+        const { DateTime } = await import('luxon');
+        const cuando = DateTime.fromISO(start_at, { zone: 'utc' })
+          .setZone(tenant.timezone)
+          .setLocale('es')
+          .toFormat("cccc d 'de' LLLL 'a las' HH:mm");
+
+        const waNumber = (phone ?? '').replace(/\D/g, '');
+        const waText = encodeURIComponent(
+          `Hola ${full_name}, soy Yolanda Miranda. Vi que agendaste una sesión conmigo el ${cuando}. Solo falta que me envíes tu comprobante de transferencia para confirmarla. ¿Necesitas ayuda con algo?`
+        );
+        const waUrl = waNumber ? `https://wa.me/${waNumber}?text=${waText}` : null;
+
+        const waBlock = waUrl
+          ? `<p style="margin:16px 0 0 0;">
+              <a href="${waUrl}" style="background:#25D366; color:#fff; padding:10px 20px; border-radius:10px; text-decoration:none; display:inline-block; font-size:14px;">
+                Escribir por WhatsApp
+              </a>
+            </p>`
+          : '';
+
+        await sendOwnerNotification({
+          ownerEmail,
+          subject: `Nueva reserva pendiente — ${full_name}`,
+          title: '📋 Nueva reserva por verificar',
+          body: `
+            <p style="font-size:15px; margin:0 0 16px 0;">
+              <strong>${full_name}</strong> agendó una sesión para el <strong>${cuando}</strong> y está esperando confirmar su transferencia.
+            </p>
+            <div style="background:#F5F7F5; border-radius:10px; padding:16px; margin:0 0 16px 0;">
+              <p style="margin:0 0 6px 0;"><strong>Correo:</strong> ${email}</p>
+              ${phone ? `<p style="margin:0;"><strong>Teléfono:</strong> ${phone}</p>` : ''}
+            </div>
+            ${waBlock}
+          `,
+        });
+      }
 
       return NextResponse.json({
         status: 'pending_verification',
