@@ -26,25 +26,33 @@ export default function TenantRegistroPage() {
     setPending(true);
     const supabase = createClient();
 
-    // 1) Crea la cuenta de auth.
-    const { error: signUpError } = await supabase.auth.signUp({
-      email: email.trim(),
-      password,
-    });
-
-    if (signUpError) {
-      setError('No se pudo crear la cuenta. Verifica el correo e inténtalo de nuevo.');
-      setPending(false);
-      return;
-    }
-
-    // 2) Resuelve el tenant real desde el slug de la URL.
+    // 1) Resuelve el tenant real desde el slug de la URL. Va ANTES del signUp
+    // porque su id se necesita para armar el emailRedirectTo, y porque así no
+    // queda una cuenta de auth huérfana si el slug no resuelve.
     const { data: tenant } = await supabase
       .rpc('public_get_tenant_by_slug', { p_slug: params.tenant })
       .maybeSingle();
 
     if (!tenant?.id) {
       setError('No pudimos identificar la consulta. Intenta de nuevo.');
+      setPending(false);
+      return;
+    }
+
+    // 2) Crea la cuenta de auth. El correo de confirmación apunta a link-callback
+    // (maneja token_hash de tipo 'signup' y vincula al paciente), con la base
+    // anclada a NEXT_PUBLIC_APP_URL en vez del Site URL del dashboard.
+    const base = process.env.NEXT_PUBLIC_APP_URL ?? '';
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: email.trim(),
+      password,
+      options: {
+        emailRedirectTo: `${base}/api/patient/link-callback?tenant_id=${tenant.id}`,
+      },
+    });
+
+    if (signUpError) {
+      setError('No se pudo crear la cuenta. Verifica el correo e inténtalo de nuevo.');
       setPending(false);
       return;
     }
