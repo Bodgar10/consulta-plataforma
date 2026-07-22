@@ -57,7 +57,7 @@ export async function POST(
   const admin = createAdminClient();
   const { data: full, error: fErr } = await admin
     .from('appointments')
-    .select('start_at, end_at, video_room_url, patient:patients(full_name, email), tenant:tenants(timezone)')
+    .select('start_at, end_at, video_room_url, tenant_id, patient:patients(full_name, email, phone), tenant:tenants(timezone)')
     .eq('id', id)
     .single();
 
@@ -67,16 +67,19 @@ export async function POST(
     return NextResponse.json({ status: 'confirmed', appointment_id: id, video_room_url: null });
   }
 
-  const patient = (full as { patient?: { full_name?: string; email?: string } }).patient;
+  const patient = (full as { patient?: { full_name?: string; email?: string; phone?: string } }).patient;
   const tenantTz = (full as { tenant?: { timezone?: string } }).tenant?.timezone;
+  const tenantId = (full as { tenant_id?: string }).tenant_id;
 
   const roomUrl = await applyConfirmationEffects(admin, {
     appointmentId: id,
+    tenantId: tenantId ?? '',
     startAt: full.start_at as string,
     endAt: full.end_at as string,
     videoRoomUrl: full.video_room_url as string | null,
     patientEmail: patient?.email ?? null,
     patientFullName: patient?.full_name ?? null,
+    patientPhone: patient?.phone ?? null,
     tenantTimezone: tenantTz ?? null,
   });
 

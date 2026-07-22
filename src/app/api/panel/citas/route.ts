@@ -67,21 +67,24 @@ export async function POST(req: NextRequest) {
   const admin = createAdminClient();
   const { data: full } = await admin
     .from('appointments')
-    .select('start_at, end_at, video_room_url, patient:patients(full_name, email), tenant:tenants(timezone)')
+    .select('start_at, end_at, video_room_url, tenant_id, patient:patients(full_name, email, phone), tenant:tenants(timezone)')
     .eq('id', r.appointment_id)
     .single();
 
   let roomUrl: string | null = null;
   if (full && r.transitioned) {
-    const patient = (full as { patient?: { full_name?: string; email?: string } }).patient;
+    const patient = (full as { patient?: { full_name?: string; email?: string; phone?: string } }).patient;
     const tenantTz = (full as { tenant?: { timezone?: string } }).tenant?.timezone;
+    const tenantId = (full as { tenant_id?: string }).tenant_id;
     roomUrl = await applyConfirmationEffects(admin, {
       appointmentId: r.appointment_id,
+      tenantId: tenantId ?? '',
       startAt: full.start_at as string,
       endAt: full.end_at as string,
       videoRoomUrl: full.video_room_url as string | null,
       patientEmail: patient?.email ?? null,
       patientFullName: patient?.full_name ?? null,
+      patientPhone: patient?.phone ?? null,
       tenantTimezone: tenantTz ?? null,
     });
   }

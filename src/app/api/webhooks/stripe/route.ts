@@ -172,7 +172,7 @@ export async function POST(req: NextRequest) {
   // Traer la cita + paciente + tenant (para idempotencia y para el correo/sala).
   const { data: appt, error: aErr } = await supabase
     .from('appointments')
-    .select('id, status, stripe_payment_intent, start_at, end_at, video_room_url, tenant_id, patient:patients(full_name, email), tenant:tenants(timezone)')
+    .select('id, status, stripe_payment_intent, start_at, end_at, video_room_url, tenant_id, patient:patients(full_name, email, phone), tenant:tenants(timezone)')
     .eq('id', appointmentId)
     .single();
 
@@ -216,15 +216,17 @@ export async function POST(req: NextRequest) {
   // Efectos idempotentes de confirmación (sala Daily + correo) — helper único.
   // Solo llegamos aquí si `updated` fue truthy (transición real), así que el
   // correo se manda exactamente una vez por confirmación.
-  const patient = (appt as { patient?: { full_name?: string; email?: string } }).patient;
+  const patient = (appt as { patient?: { full_name?: string; email?: string; phone?: string } }).patient;
   const tenantTz = (appt as { tenant?: { timezone?: string } }).tenant?.timezone;
   await applyConfirmationEffects(supabase, {
     appointmentId,
+    tenantId: appt.tenant_id as string,
     startAt: appt.start_at as string,
     endAt: appt.end_at as string,
     videoRoomUrl: appt.video_room_url as string | null,
     patientEmail: patient?.email ?? null,
     patientFullName: patient?.full_name ?? null,
+    patientPhone: patient?.phone ?? null,
     tenantTimezone: tenantTz ?? null,
   });
 

@@ -1,14 +1,19 @@
 import { createAdminClient } from '@/utils/supabase/admin';
 import { createDailyRoom } from '@/lib/video/daily';
 import { sendAppointmentConfirmation } from '@/lib/email/appointment';
+import { getOwnerEmail } from '@/lib/email/get-owner-email';
+import { sendOwnerNotification } from '@/lib/email/owner-notification';
+import { DateTime } from 'luxon';
 
 export interface ConfirmationEffectsInput {
   appointmentId: string;
+  tenantId: string;
   startAt: string;            // ISO UTC
   endAt: string;              // ISO UTC
   videoRoomUrl: string | null;
   patientEmail: string | null;
   patientFullName: string | null;
+  patientPhone?: string | null;
   tenantTimezone: string | null;
 }
 
@@ -54,6 +59,54 @@ export async function applyConfirmationEffects(
       startAt: input.startAt,
       roomUrl,
       timezone: input.tenantTimezone ?? undefined,
+    });
+  }
+
+  // Notificar al owner de la confirmación
+  const ownerEmail = await getOwnerEmail(input.tenantId);
+  if (ownerEmail) {
+    const cuando = input.tenantTimezone
+      ? DateTime.fromISO(input.startAt, { zone: 'utc' })
+          .setZone(input.tenantTimezone)
+          .setLocale('es')
+          .toFormat("cccc d 'de' LLLL 'a las' HH:mm")
+      : input.startAt;
+
+    const waNumber = (input.patientPhone ?? '').replace(/\D/g, '');
+    const waText = encodeURIComponent(
+      `Hola ${input.patientFullName ?? ''}, soy Yolanda Miranda. Tu sesión del ${cuando} está confirmada. ¡Te espero!`
+    );
+    const waBlock = waNumber
+      ? `<p style="margin:16px 0 0 0;">
+          <a href="https://wa.me/${waNumber}?text=${waText}" style="background:#25D366; color:#fff; padding:10px 20px; border-radius:10px; text-decoration:none; display:inline-block; font-size:14px;">
+            Escribir por WhatsApp
+          </a>
+        </p>`
+      : '';
+
+    const roomBlock = roomUrl
+      ? `<p style="margin:16px 0 0 0;">
+          <a href="${roomUrl}" style="background:#3C6E63; color:#FBFAF7; padding:10px 20px; border-radius:10px; text-decoration:none; display:inline-block; font-size:14px;">
+            Entrar a la videollamada
+          </a>
+        </p>`
+      : '';
+
+    await sendOwnerNotification({
+      ownerEmail,
+      subject: `Cita confirmada — ${input.patientFullName ?? 'Paciente'}`,
+      title: '✅ Cita confirmada',
+      body: `
+        <p style="font-size:15px; margin:0 0 16px 0;">
+          La sesión de <strong>${input.patientFullName ?? 'tu paciente'}</strong> del <strong>${cuando}</strong> está confirmada.
+        </p>
+        <div style="background:#F5F7F5; border-radius:10px; padding:16px; margin:0 0 16px 0;">
+          <p style="margin:0 0 6px 0;"><strong>Correo:</strong> ${input.patientEmail ?? '—'}</p>
+          ${input.patientPhone ? `<p style="margin:0;"><strong>Teléfono:</strong> ${input.patientPhone}</p>` : ''}
+        </div>
+        ${roomBlock}
+        ${waBlock}
+      `,
     });
   }
 

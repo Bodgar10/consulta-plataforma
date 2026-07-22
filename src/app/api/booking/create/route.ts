@@ -154,11 +154,13 @@ export async function POST(req: NextRequest) {
       // El descuento de crédito ya ocurrió atómicamente dentro del RPC.
       const roomUrl = await applyConfirmationEffects(supabase, {
         appointmentId: apptId as string,
+        tenantId: tenant_id,
         startAt: start_at,
         endAt: end_at,
         videoRoomUrl: null,
         patientEmail: email,
         patientFullName: full_name,
+        patientPhone: phone ?? null,
         tenantTimezone: (tenant.timezone as string) ?? null,
       });
       if (password) await linkPatientAccount({ tenantId: tenant_id, email, password });
