@@ -134,7 +134,7 @@ export default async function LandingSlugPage({
           <span className="font-display font-medium text-pine-700 text-lg">
             {tenant.display_name}
           </span>
-          <a href={`/${tenantSlug}/entrar`} className="btn-secondary">
+          <a href={`/${tenantSlug}/login`} className="btn-secondary">
             Iniciar sesión
           </a>
         </div>
