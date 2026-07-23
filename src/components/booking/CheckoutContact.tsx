@@ -81,8 +81,12 @@ export default function CheckoutContact({
           .eq("tenant_id", tenantId)
           .eq("auth_user_id", user.id)
           .maybeSingle();
+        // full_name cae al metadata del propio usuario (raw_user_meta_data,
+        // que el registro llena en el signUp) cuando la fila de patients no es
+        // visible — p.ej. cuenta con auth_user_id sin vincular, que la RLS de
+        // patients_self_select oculta. Evita mandar full_name vacío -> 400.
         setSessionContact({
-          full_name: patient?.full_name ?? "",
+          full_name: patient?.full_name ?? (user.user_metadata?.full_name as string | undefined) ?? "",
           email: patient?.email ?? user.email ?? "",
           phone: patient?.phone ?? "",
         });

@@ -44,11 +44,19 @@ export async function GET(req: NextRequest) {
   // 2) Vincular (tenant,email) -> auth_user_id: idempotente y anti-secuestro (A1).
   const { data: { user } } = await supabase.auth.getUser();
   if (tenantId && user?.email) {
-    await supabase.rpc('link_patient_to_auth_user', {
+    const { data: linkedPatientId, error: linkError } = await supabase.rpc('link_patient_to_auth_user', {
       p_tenant_id: tenantId,
       p_email: user.email,
     });
     // Devuelve null si no había fila que ligar (o es de otro uid): redirigimos igual (privacidad).
+    // Trazabilidad: en Vercel esto confirma si el link efectivamente vinculó/creó
+    // la fila. `linkedPatientId` null SIN error = no había nada que ligar y el
+    // INSERT (042) no aplicó o chocó por conflicto; con error = la RPC lanzó.
+    if (linkError) {
+      console.error('link-callback: link_patient_to_auth_user error', tenantId, user.email, linkError.message);
+    } else {
+      console.log('link-callback: link_patient_to_auth_user ok', tenantId, user.email, 'patient_id=', linkedPatientId ?? 'null');
+    }
 
     // Vincula retroactivamente los registros a evento hechos con este correo ANTES
     // de loguearse (son email-only, nunca traen auth_user_id al crearse). Idempotente:
