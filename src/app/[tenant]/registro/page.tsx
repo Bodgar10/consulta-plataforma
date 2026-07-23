@@ -13,6 +13,10 @@ export default function TenantRegistroPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+  // Caso ESPERADO (no error): con confirmación de correo activa, signUp no deja
+  // sesión, así que el paso 3 falla con 'sin sesión'. El paciente se vincula
+  // solito al confirmar el correo (link-callback + migración 042).
+  const [emailConfirmSent, setEmailConfirmSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -71,6 +75,15 @@ export default function TenantRegistroPage() {
     });
 
     if (ensureError) {
+      // 'sin sesión' = confirmación de correo activa: el registro SÍ funcionó,
+      // solo falta que el usuario confirme su correo para completar el enlace.
+      // No es un error real -> pantalla de "revisa tu correo".
+      if ((ensureError.message ?? '').includes('sin sesión')) {
+        setEmailConfirmSent(true);
+        setPending(false);
+        return;
+      }
+      // Cualquier OTRO error de la RPC sí es un fallo genuino.
       setError('Tu cuenta se creó, pero hubo un problema al vincularla. Contáctanos.');
       setPending(false);
       return;
@@ -78,6 +91,22 @@ export default function TenantRegistroPage() {
 
     router.refresh();
     router.push('/mi-cuenta');
+  }
+
+  // Pantalla de éxito: registro correcto, solo falta confirmar el correo.
+  if (emailConfirmSent) {
+    return (
+      <main className="min-h-screen flex items-center justify-center px-4 py-12">
+        <div className="card w-full max-w-[420px] space-y-4 text-center">
+          <h1 className="page-title">Revisa tu correo</h1>
+          <p className="muted">
+            Te enviamos un enlace a <span className="text-pine-700 font-medium">{email}</span>.
+            Al confirmarlo, tu cuenta quedará lista.
+          </p>
+          <p className="muted">Si no lo ves en unos minutos, revisa tu carpeta de spam.</p>
+        </div>
+      </main>
+    );
   }
 
   return (
