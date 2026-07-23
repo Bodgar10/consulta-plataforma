@@ -48,6 +48,9 @@ export default function TenantRegistroPage() {
       password,
       options: {
         emailRedirectTo: `${base}/api/patient/link-callback?tenant_id=${tenant.id}`,
+        data: {
+          full_name: fullName.trim(),
+        },
       },
     });
 

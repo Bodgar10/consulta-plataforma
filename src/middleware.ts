@@ -96,8 +96,10 @@ export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
 
   // Dominio custom en la raíz: servir la landing del tenant sin cambiar la URL.
-  // Sin esto, "/" cae en app/page.tsx (router de sesión) y manda a /login.
-  if (resolved.via === "domain" && path === "/" && slug) {
+  // SOLO para visitantes sin sesión: un usuario logueado debe pasar a
+  // app/page.tsx para que lo enrute a /agenda (profesional) o /mi-cuenta
+  // (paciente); si lo reescribiéramos aquí, quedaría atrapado en la landing.
+  if (resolved.via === "domain" && path === "/" && slug && !user) {
     const url = request.nextUrl.clone();
     url.pathname = `/${slug}`;
     return withSessionCookies(
