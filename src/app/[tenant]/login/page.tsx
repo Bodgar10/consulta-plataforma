@@ -2,16 +2,17 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import { createClient } from '@/utils/supabase/client';
 
 // Login por CONTRASEÑA con tenant en la URL (/{slug}/login). Misma lógica que
 // (auth)/login (genérico). El destino post-login lo resuelve app/page.tsx vía
-// current_user_context (no se hardcodea /agenda ni /mi-cuenta aquí). No se
-// ofrece "crear cuenta" — el registro nace desde [tenant]/registro, no desde el
-// login. No se lee el slug: signInWithPassword no lo necesita y "recuperar" es
-// una ruta genérica tenant-agnóstica; se añadiría useParams si algo lo requiere.
+// current_user_context (no se hardcodea /agenda ni /mi-cuenta aquí). El slug SÍ
+// se usa aquí para el link de registro (/{slug}/registro): a diferencia del
+// login genérico, esta página tiene el tenant en la URL, así que sí puede
+// ofrecer "crear cuenta" sin ambigüedad. "recuperar" sigue siendo genérica.
 export default function TenantLoginPage() {
+  const params = useParams<{ tenant: string }>();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -113,6 +114,13 @@ export default function TenantLoginPage() {
             </Link>
           </div>
         </form>
+
+        <p className="muted text-center">
+          ¿No tienes cuenta?{' '}
+          <Link href={`/${params.tenant}/registro`} className="text-pine-700 font-medium hover:text-pine-600 transition-colors">
+            Crea una
+          </Link>
+        </p>
       </div>
     </main>
   );
